@@ -21,12 +21,7 @@ connectCloudinary()
 //middleware
 app.use(express.json())
 app.use(cors({
-    origin: [
-      process.env.FRONTEND_URL, 
-      process.env.ADMIN_URL,
-      "https://ymgs-admin.vercel.app",
-      "https://nihanth-pharma.vercel.app"
-    ],
+    origin: "*",
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     exposedHeaders: ['Content-Type', 'Authorization', 'token'],
