@@ -7,18 +7,19 @@ import ThemeSwitcher from './ThemeSwitcher';
 const NavBar = () => {
     const [visible, setVisible] = useState(false);
     const { setShowSearch, getTypeOfProductsAddedInCart, navigate, token, setToken, setCartItems } = useContext(ShopContext);
+    
     const logout = () => {
-        navigate('/login')
-        localStorage.removeItem('token')
-        setToken('')
-        setCartItems({})
+        navigate('/login');
+        localStorage.removeItem('token');
+        setToken('');
+        setCartItems({});
     }
 
     return (
         <div className='flex items-center justify-between py-4 px-3 sm:px-5 font-medium bg-[#7ccfff] dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50 transition-colors'>
             <Link to="/" className="font-display text-primary dark:text-[#02ADEE]">
                 <div className="flex items-center gap-1 sm:gap-2">
-                <span className="text-base sm:text-xl md:text-2xl whitespace-nowrap">Nihanth Pharmacy</span>
+                    <span className="text-base sm:text-xl md:text-2xl whitespace-nowrap">Nihanth Pharmacy</span>
                 </div>
             </Link>
 
@@ -38,11 +39,6 @@ const NavBar = () => {
                     <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 dark:bg-gray-300 hidden' />
                 </NavLink>
 
-                <NavLink to='/blogs' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
-                    <p>BLOG</p>
-                    <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 dark:bg-gray-300 hidden' />
-                </NavLink>
-
                 <NavLink to='/contact' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
                     <p>CONTACT</p>
                     <hr className='w-2/4 border-none h-[1.5px] bg-gray-700 dark:bg-gray-300 hidden' />
@@ -55,7 +51,6 @@ const NavBar = () => {
                     <img onClick={() => { setShowSearch(true); navigate('/products') }} src={assets.search_icon} className='w-5 cursor-pointer dark:invert' />
                     <div className='group relative'>
                         <img onClick={() => token ? null : navigate('/login')} src={assets.profile_icon} className='w-5 cursor-pointer dark:invert' />
-                        {/* Drop down menu */}
                         {token &&
                             <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4 z-10'>
                                 <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded shadow-lg'>
@@ -72,8 +67,25 @@ const NavBar = () => {
                     </Link>
                 </div>
                 <img onClick={() => setVisible(true)} src={assets.menu_icon} className='w-5 cursor-pointer sm:hidden dark:invert ml-1' alt=""></img>
+                
+                {/* Conditional Login/Signup or Logout Button */}
+                {token ? (
+                    <button 
+                        onClick={logout} 
+                        className='bg-primary text-white py-2 px-4 rounded hover:bg-[#02ADEE] transition duration-200'
+                    >
+                        Logout
+                    </button>
+                ) : (
+                    <button 
+                        onClick={() => navigate('/login')} 
+                        className='bg-primary text-white py-2 px-4 rounded hover:bg-[#02ADEE] transition duration-200'
+                    >
+                        Login/Signup
+                    </button>
+                )}
             </div>
-            {/* sidebar menu for small screen*/}
+
             <div className={`fixed top-0 right-0 bottom-0 z-50 overflow-hidden bg-gray-100 dark:bg-gray-900 transition-all duration-300 ${visible ? 'w-full sm:w-64' : 'w-0'}`}>
                 <div className='flex flex-col text-gray-600 dark:text-gray-300'>
                     <div onClick={() => setVisible(false)} className='flex items-center gap-4 p-3 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800'>
