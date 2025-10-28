@@ -44,7 +44,7 @@ app.use((req, res, next) => {
 
 //api-end points
 app.get("/", (req, res) => {
-    res.status(200).send("YMGS pharmacy Backend");
+    res.status(200).send("Nihanth pharmacy Backend");
   });
 app.use('/api/user', userRouter)
 app.use('/api/product', productRouter)
