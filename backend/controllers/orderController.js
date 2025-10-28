@@ -658,12 +658,12 @@ const getSettings = async (req, res) => {
         if (!settings) {
             // Create default settings if none exist
             settings = await settingsModel.create({
-                contactEmail: 'ymgspharmacy@gmail.com',
-                contactPhone: '+91 8858284423',
-                contactAddress: '123 Fresh Market Lane, Garden District, Green City 12345',
+                contactEmail: 'nihanthpharmacy@gmail.com',
+                contactPhone: '+91 89041 93463',
+                contactAddress: 'No.12, Shop No.3, 1st Cross, Soumya Shree Layout, Opposite Slv Park View Apartment',
                 businessHours: 'Mon - Sat: 8:00 AM - 8:00 PM\nSunday: 9:00 AM - 6:00 PM',
-                footerEmail: 'ymgspharmacy@gmail.com',
-                footerPhone: '+91 8858284423'
+                footerEmail: 'nihanthpharmacy@gmail.com',
+                footerPhone: '+91 89041 93463'
             });
         }
         
