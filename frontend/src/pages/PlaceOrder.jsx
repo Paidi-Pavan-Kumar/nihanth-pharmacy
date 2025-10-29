@@ -65,6 +65,10 @@ const PlaceOrder = () => {
         });
         if (data.success) {
           setSavedAddresses(data.addresses);
+          // auto-select first saved address so form submission won't fail
+          if (data.addresses && data.addresses.length > 0) {
+            setSelectedAddress(data.addresses[0]);
+          }
         } else {
           toast.error(data.message || "Failed to fetch addresses");
         }
@@ -120,7 +124,9 @@ const PlaceOrder = () => {
       if (data.success) {
         setSavedAddresses(data.addresses);
         setShowAddressForm(false);
-        setSelectedAddress(formData);
+        // select the newly saved address (assume backend returns updated addresses array)
+        const last = data.addresses && data.addresses.length ? data.addresses[data.addresses.length - 1] : data.addresses[0];
+        setSelectedAddress(last || formData);
         toast.success("Address saved successfully");
       } else {
         toast.error(data.message || "Failed to save address");
