@@ -10,14 +10,30 @@ const Login = () => {
   
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [email, setEmail] = useState('')
+
+  const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^[0-9]{10}$/;
+    return phoneRegex.test(phone);
+  };
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
 
+    if (!validatePhoneNumber(phoneNumber)) {
+      toast.error('Please enter a valid 10-digit phone number');
+      return;
+    }
+
     try {
       if (currentState === 'Sign up') {
-        const response = await axios.post(backendUrl + '/api/user/register', {name, email, password})
+        const response = await axios.post(backendUrl + '/api/user/register', {
+          name, 
+          email,
+          phoneNumber,
+          password
+        })
 
         if (response.data.success) {
           setToken(response.data.token)
@@ -27,7 +43,10 @@ const Login = () => {
           toast.error(response.data.message)
         }
       } else {
-        const response = await axios.post(backendUrl + '/api/user/login', {email, password})
+        const response = await axios.post(backendUrl + '/api/user/login', {
+          phoneNumber,
+          password
+        })
 
         if (response.data.success) {
           setToken(response.data.token)
@@ -65,31 +84,48 @@ const Login = () => {
         <form className="mt-8 space-y-6" onSubmit={onSubmitHandler}>
           <div className="rounded-md shadow-sm space-y-4">
             {currentState === 'Sign up' && (
-              <div>
-                <label htmlFor="name" className="sr-only">Name</label>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Full Name"
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="name" className="sr-only">Name</label>
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="sr-only">Email address</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                    placeholder="Email address"
+                  />
+                </div>
+              </>
             )}
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="phoneNumber" className="sr-only">Phone Number</label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Phone Number (10 digits)"
+                maxLength="10"
+                pattern="[0-9]{10}"
               />
             </div>
             <div>

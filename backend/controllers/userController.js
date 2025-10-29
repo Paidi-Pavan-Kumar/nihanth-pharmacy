@@ -3,80 +3,107 @@ import bycrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from '../models/userModel.js';
 
-
-const createToken=(id) => {
+const createToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET)
 }
-
-
 
 // route for user login
 const loginUser = async (req, res) => {
     try {
-        
-        const {email, password} = req.body;
+        const {phoneNumber, password} = req.body;
 
-        const user = await userModel.findOne({email});
+        // Validate phone number
+        if (!phoneNumber || phoneNumber.length !== 10) {
+            return res.json({
+                success: false, 
+                message: "Please enter a valid 10-digit phone number"
+            });
+        }
+
+        const user = await userModel.findOne({phoneNumber});
 
         if (!user) {
-            return res.json({success:false, message:"User Not Exists"})
+            return res.json({
+                success: false, 
+                message: "User does not exist"
+            });
         }
 
         const isMatch = await bycrypt.compare(password, user.password)
 
         if (isMatch) {
             const token = createToken(user._id)
-            res.json({success:true, token})
-        }
-        else{
-            res.json({success:false, message: 'Invalid Credits'})
+            res.json({success: true, token})
+        } else {
+            res.json({
+                success: false, 
+                message: 'Invalid credentials'
+            })
         }
     } catch (error) {
         console.log(error);
-        res.json({success:false, message:error.message})
-
+        res.json({success: false, message: error.message})
     }
 }
 
-// route for user regsiter
-
+// route for user register
 const registerUser = async (req, res) => {
-
     try {
-        const {name, email, password} = req.body;
+        const {phoneNumber, name, email, password} = req.body;
 
-        // checking user alredy exists or not
-        const exists = await userModel.findOne({email});
+        // Validate phone number
+        if (!phoneNumber || phoneNumber.length !== 10) {
+            return res.json({
+                success: false, 
+                message: "Please enter a valid 10-digit phone number"
+            });
+        }
+
+        // Check if user exists by phone number
+        const exists = await userModel.findOne({phoneNumber});
         if (exists) {
-            return res.json({success:false, message:"User Already Exists"})
-        }
-        // validating email formad and strong password
-        if (!validator.isEmail(email)) {
-            return res.json({success:false, message:"please enter a valid email"})
-        }
-        if (password.length < 8) {
-            return res.json({success:false, message:"please enter a 8 character password"})
+            return res.json({
+                success: false, 
+                message: "Phone number already registered"
+            });
         }
 
-        //hashing user password
+        // Validate email format
+        if (!validator.isEmail(email)) {
+            return res.json({
+                success: false, 
+                message: "Please enter a valid email"
+            });
+        }
+
+        // Validate password
+        if (password.length < 8) {
+            return res.json({
+                success: false, 
+                message: "Password must be at least 8 characters long"
+            });
+        }
+
+        // Hash password
         const salt = await bycrypt.genSalt(10)
         const hashedPassword = await bycrypt.hash(password, salt)
 
+        // Create new user
         const newUser = new userModel({
+            phoneNumber,
             name,
             email,
-            password:hashedPassword,
+            password: hashedPassword,
         })
 
         const user = await newUser.save()
         const token = createToken(user._id)
 
-        res.json({success:true, token})
-
+        res.json({success: true, token})
 
     } catch (error) {
         console.log(error)
-        res.json({success:false, message:error.message})
+        res.json({success: false, message: error.message})
     }
 }
 

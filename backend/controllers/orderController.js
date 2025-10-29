@@ -9,8 +9,8 @@ import settingsModel from "../models/settingsModel.js";
 import cryptoWalletModel from "../models/cryptoWalletModel.js";
 
 // global variables
-const currency = 'usd'
-const deliveryCharge = 35
+const currency = 'Rupee'
+const deliveryCharge = 0
 
 // GATEWAY INTIALIZE
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
