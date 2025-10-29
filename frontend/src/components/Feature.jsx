@@ -23,18 +23,6 @@ const Feature = () => {
               icon: "📞",
             },
             {
-              title: "100% Money Back",
-              description:
-                "Get a full refund if you're not satisfied with your purchase",
-              icon: "💰",
-            },
-            {
-              title: "No-Contact Shipping",
-              description:
-                "Ensuring safe and hygienic delivery with no direct contact",
-              icon: "📦",
-            },
-            {
               title: "Exclusive Discounts",
               description:
                 "Special offers and discounts for loyal customers and bulk purchases",
