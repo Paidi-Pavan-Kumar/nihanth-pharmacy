@@ -81,7 +81,7 @@ const NavBar = () => {
                         onClick={() => navigate('/login')} 
                         className='bg-primary text-white py-2 px-4 rounded hover:bg-[#02ADEE] transition duration-200'
                     >
-                        Login/Signup
+                        Login
                     </button>
                 )}
             </div>
