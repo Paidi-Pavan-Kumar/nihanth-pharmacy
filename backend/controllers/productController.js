@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from "cloudinary"
 import productModel from "../models/productModel.js"
 
-const DEFAULT_IMAGE = "https://user-gen-media-assets.s3.amazonaws.com/seedream_images/cb631c9c-ae97-4204-9740-9d9a20d24a5d.png";
+const DEFAULT_IMAGE = "https://user-gen-media-assets.s3.amazonaws.com/gemini_images/215b34ec-e0e1-47ae-8395-e4cb9f5ec2e7.png";
 
 const addProduct = async (req, res) => {
     try {

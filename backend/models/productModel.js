@@ -4,9 +4,9 @@ const productSchema = new mongoose.Schema({
     name : { type:String, required: true },
     description : { type:String, required: true },
     price: {type:Number, required:true},
-    image : { type:Array, required: true },
-    category : { type:String, required: true },
-    subCategory : { type:String, required: true },
+    image : { type:Array, default : ["https://user-gen-media-assets.s3.amazonaws.com/gemini_images/215b34ec-e0e1-47ae-8395-e4cb9f5ec2e7.png"] },
+    category : { type:String, default : "Prescription Medicines" },
+    subCategory : { type:String, default : "Tablets" },
     bestseller : { type:Boolean },
     minOrderQuantity: { type:Number, default: 1 },
     quantityPriceList: { 
