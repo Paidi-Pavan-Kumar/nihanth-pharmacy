@@ -7,11 +7,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const GuestCheckout = () => {
-  const [method, setMethod] = useState("manual");
   const [isLoading, setIsLoading] = useState(false);
-  const [cryptoWalletAddress, setCryptoWalletAddress] = useState("");
   const [sameAsDelivery, setSameAsDelivery] = useState(true);
-  const { navigate, backendUrl, setCartItem, getCartAmount, delivery_fee, getCartItems, currency } = useContext(ShopContext);
+  const { navigate, backendUrl, setCartItem, getCartAmount, getCartItems, currency } = useContext(ShopContext);
   
   const [formData, setFormData] = useState({
     firstName: "",
@@ -32,15 +30,6 @@ const GuestCheckout = () => {
     billingZipcode: "",
     billingCountry: "",
     billingPhone: "",
-    manualPaymentDetails: {
-      paymentType: "",
-      cardNumber: "",
-      cardHolderName: "",
-      expiryDate: "",
-      cvv: "",
-      paypalEmail: "",
-      cryptoTransactionId: "User didn't enter transaction ID",
-    },
   });
 
   const [notes, setNotes] = useState("");
@@ -48,10 +37,6 @@ const GuestCheckout = () => {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
-  const [availableCryptos, setAvailableCryptos] = useState([]);
-  const [selectedCrypto, setSelectedCrypto] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState("");
-  const [selectedWallet, setSelectedWallet] = useState(null);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
   useEffect(() => {
@@ -228,37 +213,6 @@ const GuestCheckout = () => {
       }
     }
 
-    if (method === "manual") {
-      if (!formData.manualPaymentDetails?.paymentType) {
-        toast.error("Please select a payment type");
-        return;
-      }
-
-      if (
-        formData.manualPaymentDetails.paymentType === "paypal" &&
-        !formData.manualPaymentDetails.paypalEmail
-      ) {
-        toast.error("Please enter your PayPal email");
-        return;
-      }
-
-      if (
-        ["credit_card", "debit_card"].includes(
-          formData.manualPaymentDetails.paymentType
-        )
-      ) {
-        if (
-          !formData.manualPaymentDetails.cardNumber ||
-          !formData.manualPaymentDetails.cardHolderName ||
-          !formData.manualPaymentDetails.expiryDate ||
-          !formData.manualPaymentDetails.cvv
-        ) {
-          toast.error("Please fill in all card details");
-          return;
-        }
-      }
-    }
-
     try {
       setIsLoading(true);
       const items = getCartItems();
@@ -289,22 +243,18 @@ const GuestCheckout = () => {
           };
 
       const subtotal = getCartAmount();
-      const finalAmount = subtotal + delivery_fee - couponDiscount;
+      const finalAmount = subtotal - couponDiscount;
 
       const orderData = {
         address: address,
         billingAddress: billingAddress,
         items: items,
         amount: finalAmount,
-        originalAmount: subtotal + delivery_fee,
+        originalAmount: subtotal,
         isGuest: true,
         notes: notes,
         couponCode: couponDiscount > 0 ? couponCode : undefined,
-        manualPaymentDetails: method === "manual" ? {
-          ...formData.manualPaymentDetails,
-          cryptoType: selectedCrypto,
-          cryptoNetwork: selectedNetwork
-        } : undefined
+        paymentMethod: 'COD' // Set payment method as COD
       };
 
       const response = await axios.post(
@@ -314,16 +264,10 @@ const GuestCheckout = () => {
       
       if (response.data.success) {
         setCartItem({});
-        toast("Order placed successfully. One of our representative will get in touch with you in 24 hours Via call or email",{
-          type: "success",
-          autoClose: 5000
-        })
-        toast("Now you will be Redirected to Product Page",{
-          type:"info"
-        })
-        setTimeout(()=>{
-          navigate("/products")
-        }, 3000)
+        toast.success("Order placed successfully! You can pay cash on delivery.");
+        setTimeout(() => {
+          navigate("/products");
+        }, 3000);
       } else {
         toast.error(response.data.message || "Failed to place order");
       }
@@ -604,311 +548,14 @@ const GuestCheckout = () => {
           <Title text1={"PAYMENT"} text2={"METHOD"} />
           
           <div className="flex gap-3 flex-col mt-4">
-            <div
-              onClick={() => handleMethodChange("manual", "paypal")}
-              className="flex items-center gap-3 border dark:border-gray-600 p-2 px-3 cursor-pointer hover:border-green-500 dark:hover:border-green-500 transition-colors dark:bg-gray-700"
-            >
-              <p
-                className={`min-w-3.5 h-3.5 border dark:border-gray-500 rounded-full ${
-                  method === "manual" &&
-                  formData.manualPaymentDetails.paymentType === "paypal"
-                    ? "bg-green-500"
-                    : ""
-                }`}
-              ></p>
-              <p className="dark:text-gray-200">PayPal</p>
+            <div className="flex items-center gap-3 border dark:border-gray-600 p-4 px-5 dark:bg-gray-700">
+              <p className="min-w-3.5 h-3.5 bg-green-500 rounded-full"></p>
+              <p className="dark:text-gray-200">Cash on Delivery</p>
             </div>
-
-            <div
-              onClick={() => handleMethodChange("manual", "credit_card")}
-              className="flex items-center gap-3 border dark:border-gray-600 p-2 px-3 cursor-pointer hover:border-green-500 dark:hover:border-green-500 transition-colors dark:bg-gray-700"
-            >
-              <p
-                className={`min-w-3.5 h-3.5 border dark:border-gray-500 rounded-full ${
-                  method === "manual" &&
-                  ["credit_card", "debit_card"].includes(
-                    formData.manualPaymentDetails.paymentType
-                  )
-                    ? "bg-green-500"
-                    : ""
-                }`}
-              ></p>
-              <p className="dark:text-gray-200">Credit/Debit Card</p>
-            </div>
-
-            <div
-              onClick={() => handleMethodChange("manual", "crypto")}
-              className="flex items-center gap-3 border dark:border-gray-600 p-2 px-3 cursor-pointer hover:border-green-500 dark:hover:border-green-500 transition-colors dark:bg-gray-700"
-            >
-              <p
-                className={`min-w-3.5 h-3.5 border dark:border-gray-500 rounded-full ${
-                  method === "manual" &&
-                  formData.manualPaymentDetails.paymentType === "crypto"
-                    ? "bg-green-500"
-                    : ""
-                }`}
-              ></p>
-              <p className="dark:text-gray-200">Crypto</p>
-            </div>
-
-            <div 
-            onClick={() => handleMethodChange("manual", "western_union")}
-            className="flex items-center gap-3 border dark:border-gray-600 p-2 px-3 cursor-pointer hover:border-green-500 dark:hover:border-green-500 transition-colors dark:bg-gray-700">
-            <p
-                className={`min-w-3.5 h-3.5 border dark:border-gray-500 rounded-full ${
-                  method === "manual" &&
-                  formData.manualPaymentDetails.paymentType === "western_union"
-                    ? "bg-green-500"
-                    : ""
-                }`}
-              ></p>
-              <p className="dark:text-gray-200">Western Union</p>
-              <img
-                className="h-5 mx-4"
-                src={assets.western_union}
-                alt="Western Union"
-              />
-            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 px-3">
+              Pay with cash when your order is delivered.
+            </p>
           </div>
-
-          {method === "manual" && formData.manualPaymentDetails.paymentType !== "western_union" && (
-            <div className="mt-6 border dark:border-gray-600 p-4 rounded dark:bg-gray-700">
-              <h3 className="text-lg font-medium mb-4 dark:text-gray-200">
-                Payment Details
-              </h3>
-
-              {formData.manualPaymentDetails?.paymentType === "paypal" && (
-                <div>
-                  <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                    PayPal Email
-                  </label>
-                  <input
-                    type="email"
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        manualPaymentDetails: {
-                          ...prev.manualPaymentDetails,
-                          paypalEmail: e.target.value,
-                        },
-                      }))
-                    }
-                    className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                    placeholder="PayPal Email Address"
-                  />
-                </div>
-              )}
-
-              {formData.manualPaymentDetails?.paymentType &&
-                ["credit_card", "debit_card"].includes(
-                  formData.manualPaymentDetails.paymentType
-                ) && (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                        Payment Type
-                      </label>
-                      <select
-                        required
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            manualPaymentDetails: {
-                              ...prev.manualPaymentDetails,
-                              paymentType: e.target.value,
-                            },
-                          }))
-                        }
-                        className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                      >
-                        <option value="">Select Payment Type</option>
-                        <option value="credit_card">Credit Card</option>
-                        <option value="debit_card">Debit Card</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                        Card Number
-                      </label>
-                      <input
-                        type="text"
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            manualPaymentDetails: {
-                              ...prev.manualPaymentDetails,
-                              cardNumber: e.target.value,
-                            },
-                          }))
-                        }
-                        className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                        placeholder="Card Number"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                        Card Holder Name
-                      </label>
-                      <input
-                        type="text"
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            manualPaymentDetails: {
-                              ...prev.manualPaymentDetails,
-                              cardHolderName: e.target.value,
-                            },
-                          }))
-                        }
-                        className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                        placeholder="Card Holder Name"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              manualPaymentDetails: {
-                                ...prev.manualPaymentDetails,
-                                expiryDate: e.target.value,
-                              },
-                            }))
-                          }
-                          className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                          CVV
-                        </label>
-                        <input
-                          type="text"
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              manualPaymentDetails: {
-                                ...prev.manualPaymentDetails,
-                                cvv: e.target.value,
-                              },
-                            }))
-                          }
-                          className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                          placeholder="CVV"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              {formData.manualPaymentDetails?.paymentType === "crypto" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                      Select Cryptocurrency
-                    </label>
-                    <select
-                      value={selectedCrypto}
-                      onChange={(e) => handleCryptoChange(e.target.value)}
-                      className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                    >
-                      <option value="">Select a cryptocurrency</option>
-                      {[...new Set(availableCryptos.map(wallet => wallet.cryptoType))].map(crypto => (
-                        <option key={crypto} value={crypto}>
-                          {crypto}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  {selectedCrypto && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                        Select Network
-                      </label>
-                      <select
-                        value={selectedNetwork}
-                        onChange={(e) => handleNetworkChange(e.target.value)}
-                        className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                      >
-                        <option value="">Select a network</option>
-                        {availableCryptos
-                          .filter(wallet => wallet.cryptoType === selectedCrypto)
-                          .map(wallet => (
-                            <option key={wallet.network} value={wallet.network}>
-                              {wallet.network}
-                            </option>
-                          ))
-                        }
-                      </select>
-                    </div>
-                  )}
-                  
-                  {selectedWallet && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                      Send payment to this wallet address:
-                    </label>
-                    <div className="flex items-center">
-                      <input
-                        type="text"
-                          value={selectedWallet.walletAddress}
-                        readOnly
-                        className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                      />
-                      <button
-                        type="button"
-                          onClick={() => copyWalletAddress(selectedWallet.walletAddress)}
-                        className="bg-gray-200 dark:bg-gray-600 px-4 py-2 ml-2 rounded"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                      
-                      <div className="mt-4 flex justify-center">
-                        <img 
-                          src={selectedWallet.qrCodeImage} 
-                          alt={`${selectedCrypto} ${selectedNetwork} QR Code`} 
-                          className="w-48 h-48 object-contain border dark:border-gray-600 p-2"
-                        />
-                      </div>
-                      
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        After sending payment, you can optionally enter your transaction ID below
-                    </p>
-                  </div>
-                  )}
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-                      Your Transaction ID (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          manualPaymentDetails: {
-                            ...prev.manualPaymentDetails,
-                            cryptoTransactionId: e.target.value,
-                          },
-                        }))
-                      }
-                      className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                      placeholder="Enter transaction ID (optional)"
-                    />
-                  </div>
-                </div>
-              )}
-
-            </div>
-          )}
 
           <div className="text-center my-4">
             <button
@@ -935,4 +582,4 @@ const GuestCheckout = () => {
   );
 };
 
-export default GuestCheckout; 
+export default GuestCheckout;
