@@ -3,33 +3,48 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // Always use system theme only
-  const [theme] = useState('system');
+  const [theme, setTheme] = useState(() => {
+    // Check if theme is stored in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    
+    // If theme is set to 'dark' or 'light', return it
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return savedTheme;
+    }
+    
+    // Default to 'system'
+    return 'system';
+  });
 
   useEffect(() => {
+    // Update localStorage when theme changes
+    localStorage.setItem('theme', theme);
+    
+    // Apply theme to document
+    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    if (theme !== 'system') return;
+    
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const apply = (isDark) => {
-      if (isDark) document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
+    
+    const handleChange = () => {
+      if (mediaQuery.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     };
-
-    // apply initial system preference
-    apply(mediaQuery.matches);
-
-    // listen for system changes
-    const handleChange = (e) => apply(e.matches);
-    if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', handleChange);
-    else mediaQuery.addListener(handleChange);
-
-    return () => {
-      if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', handleChange);
-      else mediaQuery.removeListener(handleChange);
-    };
-  }, []);
-
-  // keep API stable — setTheme is noop
-  const setTheme = () => {};
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
@@ -44,4 +59,4 @@ export const useTheme = () => {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
-};
+}; 

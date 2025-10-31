@@ -43,7 +43,7 @@ const NavBar = () => {
 
             {/* Right side - ensure icons remain visible on mobile */}
             <div className='flex items-center gap-2 sm:gap-4 md:gap-6 text-gray-700 dark:text-gray-200'>
-                {/* <ThemeSwitcher /> */}
+                <ThemeSwitcher />
 
                 <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
                     <img 
