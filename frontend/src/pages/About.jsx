@@ -21,10 +21,10 @@ const About = () => {
         sizes='(max-width: 768px) 100vw, 450px' 
       />
       <div className='flex flex-col justify-center gap-6 md:w-2/4 text-gray-600 dark:text-gray-300'>
-        <p>Welcome to Nihanth Pharmacy, your trusted online Pharmacy! We provide a seamless way to order medicines online, ensuring you receive your essential medications quickly and hassle-free. At Nihanth Pharmacy, we prioritize your health by delivering genuine and high-quality medicines right to your doorstep.</p>
+        <p>Welcome to Nihanth Pharma, your trusted online Pharmacy! We provide a seamless way to order medicines online, ensuring you receive your essential medications quickly and hassle-free. At Nihanth Pharma, we prioritize your health by delivering genuine and high-quality medicines right to your doorstep.</p>
         <p>Our team works with certified pharmacies and licensed suppliers to bring you a wide range of medicines, wellness products, and healthcare essentials. Whether it's prescription medicines, over-the-counter drugs, or health supplements, we ensure safe and reliable delivery.</p>
         <b className='text-gray-800 dark:text-gray-100'>Our Mission</b>
-        <p>At Nihanth Pharmacy, we are committed to making healthcare accessible and convenient. Our mission is to provide a trusted and efficient medicine delivery service, ensuring that everyone has access to the right medication at the right time. We bridge the gap between healthcare providers and patients through technology-driven solutions.</p>
+        <p>At Nihanth Pharma, we are committed to making healthcare accessible and convenient. Our mission is to provide a trusted and efficient medicine delivery service, ensuring that everyone has access to the right medication at the right time. We bridge the gap between healthcare providers and patients through technology-driven solutions.</p>
       </div>
     </div>
 
