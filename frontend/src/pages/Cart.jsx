@@ -83,7 +83,7 @@ const Cart = () => {
                     <div>
                       <p className='text-xs sm:text-lg font-medium dark:text-white'>{productData.name}</p>
                       <div className='flex items-center gap-5 mt-2'>
-                        <p className='dark:text-gray-300'>{currency}{displayPrice}</p>
+                        <p className='dark:text-gray-300'>{currency}{formatPrice(displayPrice)}</p>
                         {item.isPackage && (
                           <p className='text-xs text-green-600 dark:text-green-400'>Package Price</p>
                         )}
