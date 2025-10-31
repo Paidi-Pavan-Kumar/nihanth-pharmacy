@@ -437,6 +437,7 @@ const Collection = () => {
                     name={item.name} 
                     price={item.price} 
                     image={item.image}
+                    customerDiscount={item.customerDiscount}
                     quantityPriceList={item.quantityPriceList}
                   />
                   <Link 
