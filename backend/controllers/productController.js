@@ -5,10 +5,31 @@ const DEFAULT_IMAGE = "https://user-gen-media-assets.s3.amazonaws.com/gemini_ima
 
 const addProduct = async (req, res) => {
     try {
-        const { name, description, price, category, subCategory, bestseller, minOrderQuantity, quantityPriceList } = req.body
+        const { 
+            name, 
+            packing,
+            companyName,
+            description,
+            price,
+            customerDiscount,
+            promoterDiscount,
+            category, 
+            subCategory, 
+            bestseller,
+            minOrderQuantity,
+            image: imageUrl 
+        } = req.body;
 
-        // Initialize imagesUrl with default image
-        let imagesUrl = [DEFAULT_IMAGE];
+        // Validate required fields
+        if (!name || !packing || !companyName || !price || customerDiscount === undefined || promoterDiscount === undefined) {
+            return res.json({ 
+                success: false, 
+                message: "Missing required fields" 
+            });
+        }
+
+        // Initialize imagesUrl with provided imageUrl or default
+        let imagesUrl = [imageUrl || DEFAULT_IMAGE];
         
         // Handle additional image uploads (up to 3 more)
         if (req.files) {
@@ -27,20 +48,23 @@ const addProduct = async (req, res) => {
                         return result.secure_url;
                     })
                 );
-                // Append uploaded images to imagesUrl array
                 imagesUrl = [...imagesUrl, ...uploadedImages];
             }
         }
         
         const productData = {
             name,
+            packing,
+            companyName,
             description,
-            category,
             price: Number(price),
-            subCategory,
-            bestseller: bestseller === "true" ? true : false,
+            customerDiscount: Number(customerDiscount),
+            promoterDiscount: Number(promoterDiscount),
+            // promoCodeDiscount will be auto-calculated
+            category: category || "Prescription Medicines",
+            subCategory: subCategory || "Tablets",
+            bestseller: bestseller === "true",
             minOrderQuantity: minOrderQuantity ? Number(minOrderQuantity) : 1,
-            quantityPriceList: quantityPriceList || null,
             image: imagesUrl,
             date: Date.now()
         }
@@ -52,6 +76,140 @@ const addProduct = async (req, res) => {
     } catch (error) {
         console.log(error)
         res.json({success:false, message:error.message})
+    }
+}
+
+// Update bulkAddProducts for CSV import
+const bulkAddProducts = async (req, res) => {
+    try {
+        let { products } = req.body;
+        if (!products) return res.json({ success: false, message: 'Provide products array in request body' });
+
+        if (typeof products === 'string') products = JSON.parse(products);
+
+        if (!Array.isArray(products) || products.length === 0) {
+            return res.json({ success: false, message: 'Products must be a non-empty array' });
+        }
+
+        if (products.length > 1000) {
+            return res.json({ success: false, message: 'Too many products in a single request. Split into multiple batches.' });
+        }
+
+        const productDocs = products.map(p => ({
+            name: p.Itemname,
+            packing: p.Packing,
+            companyName: p.Companyname,
+            description: '', // Add description if needed
+            price: Number(p.price),
+            customerDiscount: Number(p['Discount For Customer (%)']),
+            promoterDiscount: Number(p['Discount for Promoter in %']),
+            // promoCodeDiscount will be auto-calculated based on model
+            image: [p.image || DEFAULT_IMAGE],
+            category: "Prescription Medicines", // Set default or add to CSV
+            subCategory: "Tablets", // Set default or add to CSV
+            bestseller: false, // Set default or add to CSV
+            minOrderQuantity: 1, // Set default or add to CSV
+            date: Date.now()
+        }));
+
+        const inserted = await productModel.insertMany(productDocs, { ordered: false });
+
+        res.json({ 
+            success: true, 
+            inserted: inserted.length, 
+            message: `${inserted.length} products added` 
+        });
+    } catch (error) {
+        console.error('bulkAddProducts error:', error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// Update editProduct 
+const editProduct = async (req, res) => {
+    try {
+        const { 
+            id, 
+            name, 
+            packing,
+            companyName,
+            description,
+            price,
+            customerDiscount,
+            promoterDiscount,
+            category, 
+            subCategory, 
+            bestseller,
+            minOrderQuantity,
+            existingImages, 
+            imagesToReplace 
+        } = req.body;
+
+        const product = await productModel.findById(id);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        // Handle images same as before
+        let imagesUrl = existingImages ? JSON.parse(existingImages) : [];
+        const replacementMap = imagesToReplace ? JSON.parse(imagesToReplace) : {};
+        
+        // Handle image uploads
+        const image1 = req.files?.image1 && req.files.image1[0];
+        const image2 = req.files?.image2 && req.files.image2[0];
+        const image3 = req.files?.image3 && req.files.image3[0];
+        const image4 = req.files?.image4 && req.files.image4[0];
+        
+        // Map positions to images
+        const positionImageMap = {
+            0: image1,
+            1: image2,
+            2: image3,
+            3: image4
+        };
+
+        // Process each position separately
+        const uploadPromises = [];
+        const newImagesUrl = [...imagesUrl]; // Create a new array to avoid mutation issues
+        
+        // Process each position that needs to be replaced
+        for (const position in replacementMap) {
+            if (replacementMap[position] && positionImageMap[position]) {
+                // This position should be replaced with a new image
+                uploadPromises.push(
+                    cloudinary.uploader.upload(positionImageMap[position].path, {resource_type: 'image'})
+                    .then(result => {
+                        newImagesUrl[position] = result.secure_url;
+                    })
+                );
+            }
+        }
+        
+        // Wait for all uploads to complete
+        if (uploadPromises.length > 0) {
+            await Promise.all(uploadPromises);
+        }
+        
+        // Update product fields
+        product.name = name;
+        product.packing = packing;
+        product.companyName = companyName;
+        product.description = description;
+        product.price = Number(price);
+        product.customerDiscount = Number(customerDiscount);
+        product.promoterDiscount = Number(promoterDiscount);
+        product.category = category;
+        product.subCategory = subCategory;
+        product.bestseller = bestseller === "true";
+        product.minOrderQuantity = minOrderQuantity ? Number(minOrderQuantity) : 1;
+        product.image = newImagesUrl;
+
+        await product.save();
+
+        res.json({ success: true, message: "Product updated successfully" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
     }
 }
 
@@ -253,88 +411,6 @@ const removeProduct = async (req, res) => {
     }
 }
 
-const editProduct = async (req, res) => {
-    try {
-        const { id, name, description, price, category, subCategory, bestseller, minOrderQuantity, quantityPriceList, existingImages, imagesToReplace } = req.body;
-
-        const product = await productModel.findById(id);
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
-        }
-
-        // Parse JSON strings
-        let imagesUrl = existingImages ? JSON.parse(existingImages) : [];
-        const replacementMap = imagesToReplace ? JSON.parse(imagesToReplace) : {};
-        
-        // Handle image uploads
-        const image1 = req.files?.image1 && req.files.image1[0];
-        const image2 = req.files?.image2 && req.files.image2[0];
-        const image3 = req.files?.image3 && req.files.image3[0];
-        const image4 = req.files?.image4 && req.files.image4[0];
-        
-        // Map positions to images
-        const positionImageMap = {
-            0: image1,
-            1: image2,
-            2: image3,
-            3: image4
-        };
-
-        // Process each position separately
-        const uploadPromises = [];
-        const newImagesUrl = [...imagesUrl]; // Create a new array to avoid mutation issues
-        
-        // Process each position that needs to be replaced
-        for (const position in replacementMap) {
-            if (replacementMap[position] && positionImageMap[position]) {
-                // This position should be replaced with a new image
-                uploadPromises.push(
-                    cloudinary.uploader.upload(positionImageMap[position].path, {resource_type: 'image'})
-                    .then(result => {
-                        newImagesUrl[position] = result.secure_url;
-                    })
-                );
-            }
-        }
-        
-        // Wait for all uploads to complete
-        if (uploadPromises.length > 0) {
-            await Promise.all(uploadPromises);
-        }
-        
-        // Parse quantityPriceList if it's a string
-        let parsedQuantityPriceList = null;
-        if (quantityPriceList) {
-            try {
-                // If it's already a valid JSON string, parse it
-                parsedQuantityPriceList = JSON.stringify(JSON.parse(quantityPriceList));
-            } catch (e) {
-                // If parsing fails, it might already be stringified or invalid
-                console.log("Error parsing quantityPriceList:", e);
-                return res.json({ success: false, message: "Invalid quantity price list format" });
-            }
-        }
-
-        // Update product fields
-        product.name = name;
-        product.description = description;
-        product.price = Number(price);
-        product.category = category;
-        product.subCategory = subCategory;
-        product.bestseller = bestseller === "true";
-        product.minOrderQuantity = minOrderQuantity ? Number(minOrderQuantity) : 1;
-        product.quantityPriceList = parsedQuantityPriceList;
-        product.image = newImagesUrl;
-
-        await product.save();
-
-        res.json({ success: true, message: "Product updated successfully" });
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
-    }
-}
-
 const getProductById = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -353,81 +429,6 @@ const getProductById = async (req, res) => {
         res.json({ success: true, product });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error.message });
-    }
-};
-
-const bulkAddProducts = async (req, res) => {
-    try {
-        // Expecting JSON body: { products: [ { name, description, price, category, subCategory, bestseller, minOrderQuantity, quantityPriceList, images: [urlOrBase64,...] }, ... ] }
-        let { products } = req.body;
-        if (!products) return res.json({ success: false, message: 'Provide products array in request body' });
-
-        // If sent as string (form-data), parse it
-        if (typeof products === 'string') products = JSON.parse(products);
-
-        if (!Array.isArray(products) || products.length === 0) {
-            return res.json({ success: false, message: 'Products must be a non-empty array' });
-        }
-
-        // Limit batch size to avoid memory/timeout issues (adjust as needed)
-        const BATCH_LIMIT = 200;
-        if (products.length > 1000) {
-            return res.json({ success: false, message: 'Too many products in a single request. Split into multiple batches.' });
-        }
-
-        // Prepare product documents. If images array contains base64 data URIs, upload to Cloudinary.
-        const productDocs = await Promise.all(products.map(async (p) => {
-            const {
-                name,
-                description = '',
-                price = 0,
-                category = '',
-                subCategory = '',
-                bestseller = false,
-                minOrderQuantity = 1,
-                quantityPriceList = null,
-                images = [] // array of urls or base64 data URIs
-            } = p;
-
-            let imagesUrl = [];
-
-            if (Array.isArray(images) && images.length > 0) {
-                // Upload data-URI images to Cloudinary, keep plain URLs as-is
-                for (const img of images) {
-                    try {
-                        if (typeof img === 'string' && img.startsWith('data:')) {
-                            const uploadResult = await cloudinary.uploader.upload(img, { resource_type: 'image' });
-                            imagesUrl.push(uploadResult.secure_url);
-                        } else if (typeof img === 'string' && img.trim() !== '') {
-                            imagesUrl.push(img); // assume already a hosted URL
-                        }
-                    } catch (err) {
-                        console.warn('Image upload failed for one image, skipping:', err.message);
-                    }
-                }
-            }
-
-            return {
-                name,
-                description,
-                category,
-                price: Number(price),
-                subCategory,
-                bestseller: bestseller === true || bestseller === 'true',
-                minOrderQuantity: minOrderQuantity ? Number(minOrderQuantity) : 1,
-                quantityPriceList: quantityPriceList || null,
-                image: imagesUrl,
-                date: Date.now()
-            };
-        }));
-
-        // Insert many for performance
-        const inserted = await productModel.insertMany(productDocs, { ordered: false }); // ordered:false continues on error
-
-        res.json({ success: true, inserted: inserted.length, message: `${inserted.length} products added` });
-    } catch (error) {
-        console.error('bulkAddProducts error:', error);
         res.json({ success: false, message: error.message });
     }
 };

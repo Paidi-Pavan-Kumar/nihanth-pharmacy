@@ -37,6 +37,6 @@ productRouter.post('/edit', adminAuth, upload.fields([{name:'image1', maxCount:1
     {name:'image3', maxCount:1}, 
     {name:'image4', maxCount:1}]), editProduct);
 
-productRouter.post('/bulk-add', bulkAddProducts);
+productRouter.post('/bulk-add', adminAuth, bulkAddProducts);
 
 export default productRouter;
