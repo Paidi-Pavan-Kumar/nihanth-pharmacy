@@ -22,7 +22,7 @@ const NewsLetterBox = () => {
             <div className="bg-accent dark:bg-gray-700 rounded-2xl p-8 md:p-12">
                 <div className="max-w-2xl mx-auto text-center">
                     <h2 className="font-display text-3xl md:text-4xl font-semibold text-primary dark:text-[#02ADEE]">
-                        Stay updated with Nihanth Pharmacy
+                        Stay updated with Nihanth Pharma
                     </h2>
                     <p className="mt-4 text-gray-600 dark:text-gray-300">
                         Subscribe to our newsletter and receive updates about new products

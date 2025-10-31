@@ -34,7 +34,7 @@ const Footer = () => {
       <div className="flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 mb-10 text-small">
         <div>
           <Link to="/" className="font-display text-2xl text-primary dark:text-[#02ADEE]">
-            Nihanth Pharmacy
+            Nihanth Pharma
           </Link>
           <p className="w-full md:w-2/3 text-gray-600 dark:text-gray-300 mt-2">
             Your Trusted Online Medicine & Healthcare Partner
@@ -74,11 +74,21 @@ const Footer = () => {
         </div>
       </div>
       <div>
-        <hr className="border-gray-300 dark:border-gray-700" />
-        <p className="py-5 text-sm text-center text-gray-600 dark:text-gray-300">
-          Nihanth Pharmacy CopyRight 2025 All-Rights Reserved.
-        </p>
-      </div>
+  <hr className="border-gray-300 dark:border-gray-700" />
+  <p className="py-5 text-sm text-center text-gray-600 dark:text-gray-300">
+    ©{" "}
+    <a
+      href="https://www.linkedin.com/company/patha-projects"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-blue-600 hover:underline dark:text-blue-400"
+    >
+      Patha Team
+    </a>{" "}
+    | 2025 All Rights Reserved.
+  </p>
+</div>
+
     </div>
   );
 };

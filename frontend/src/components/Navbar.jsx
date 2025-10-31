@@ -19,7 +19,7 @@ const NavBar = () => {
         <div className='flex items-center justify-between py-4 px-3 sm:px-5 font-medium bg-[#7ccfff] dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50 transition-colors'>
             <Link to="/" className="font-display text-primary dark:text-[#02ADEE]">
                 <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-base sm:text-xl md:text-2xl whitespace-nowrap">Nihanth Pharmacy</span>
+                    <span className="text-base sm:text-xl md:text-2xl whitespace-nowrap">Nihanth Pharma</span>
                 </div>
             </Link>
 
@@ -43,7 +43,7 @@ const NavBar = () => {
 
             {/* Right side - ensure icons remain visible on mobile */}
             <div className='flex items-center gap-2 sm:gap-4 md:gap-6 text-gray-700 dark:text-gray-200'>
-                <ThemeSwitcher />
+                {/* <ThemeSwitcher /> */}
 
                 <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
                     <img 

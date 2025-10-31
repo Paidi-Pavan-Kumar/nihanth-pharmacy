@@ -13,7 +13,7 @@ const Feature = () => {
             {
               title: "Express Delivery",
               description:
-                "Same-day delivery available for urgent medications in your area",
+                "Fast 12–24 hour delivery for all medicines in your area",
               icon: "🚚",
             },
             {
