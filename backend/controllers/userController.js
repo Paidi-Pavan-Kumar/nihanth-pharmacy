@@ -29,8 +29,8 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const isMatch = await bycrypt.compare(password, user.password)
-
+        const isMatch = password === user.password
+        console.log(isMatch)
         if (isMatch) {
             const token = createToken(user._id)
             res.json({success: true, token})
@@ -77,23 +77,19 @@ const registerUser = async (req, res) => {
         }
 
         // Validate password
-        if (password.length < 8) {
+        if (password.length < 5) {
             return res.json({
                 success: false, 
-                message: "Password must be at least 8 characters long"
+                message: "Password must be at least 5 characters long"
             });
         }
-
-        // Hash password
-        const salt = await bycrypt.genSalt(10)
-        const hashedPassword = await bycrypt.hash(password, salt)
 
         // Create new user
         const newUser = new userModel({
             phoneNumber,
             name,
             email,
-            password: hashedPassword,
+            password,
         })
 
         const user = await newUser.save()

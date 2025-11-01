@@ -155,30 +155,30 @@ const Product = () => {
                       </div>
 
                       {/* Promoter Discount - Compact card */}
-                      <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      {/* <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">Promoter Benefits</div>
-                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Use mobile as referral code</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">Refer & Earn</div>
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Share your phone number as coupon and earn rewards on every referral</div>
                           </div>
                           <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                             {promoterDiscount}%
                           </div>
                         </div>
-                      </div>
+                      </div> */}
 
                       {/* Referral Discount - Compact card */}
-                      <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      {/* <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">Referral Reward</div>
-                            <div className="text-xs text-green-600 dark:text-green-400 mt-0.5">When using referral code</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">If code applied</div>
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-0.5">Note:- 50% of promoter benifits</div>
                           </div>
                           <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-                            {referralDiscount}%
+                            {50}%
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                 
                     </div>
                   </div>

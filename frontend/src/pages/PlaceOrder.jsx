@@ -629,11 +629,11 @@ const PlaceOrder = () => {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+            {/* <label className="block text-sm font-medium mb-2 dark:text-gray-300">
               Apply Coupon
-            </label>
+            </label> */}
             <div className="flex space-x-2">
-              <input
+              {/* <input
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
@@ -647,14 +647,14 @@ const PlaceOrder = () => {
                 className="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded"
               >
                 {isApplyingCoupon ? "Applying..." : "Apply"}
-              </button>
+              </button> */}
             </div>
             {couponError && <p className="text-red-500 text-sm mt-1">{couponError}</p>}
             {couponSuccess && <p className="text-green-500 text-sm mt-1">{couponSuccess}</p>}
 
             {couponDiscount > 0 && (
               <div className="mt-2 p-2 bg-green-50 dark:bg-green-900 dark:text-green-100 text-green-700 rounded">
-                <p>Discount applied: {currency} {couponDiscount.toFixed(2)}</p>
+                {/* <p>Discount applied: {currency} {couponDiscount.toFixed(2)}</p> */}
                 {/* <p>New total: {currency} {(getCartAmount() + delivery_fee - couponDiscount).toFixed(2)}</p> */}
               </div>
             )}

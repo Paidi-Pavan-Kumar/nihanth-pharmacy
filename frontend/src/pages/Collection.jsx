@@ -50,7 +50,8 @@ const Collection = () => {
         subCategory: [],
         sortBy: 'date',
         sortOrder: 'desc',
-        search: search || ''    // <--- changed to preserve context search
+        search: search || '',    // <--- changed to preserve context search
+        limit : 100
       });
       setInitialized(true);
     }

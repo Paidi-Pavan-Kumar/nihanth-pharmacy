@@ -176,7 +176,7 @@ const Orders = () => {
                               <p className="font-medium dark:text-white">{item.name}</p>
                               <div className="flex space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <p>Quantity: {item.quantity}</p>
-                                <p>Price: {currency}{item.price}</p>
+                                {/* <p>Price: {currency}{item.}</p> */}
                               </div>
                             </div>
                           </div>
@@ -202,7 +202,7 @@ const Orders = () => {
                             <p>Code: <span className="font-medium">{order.coupon.code}</span></p>
                             <p>Discount: {currency}{order.coupon.discount}</p>
                             {order.originalAmount && (
-                              <p>Original Amount: {currency}{order.originalAmount}</p>
+                              <p>Original Amount: {currency}{Number(order.originalAmount).toFixed(2)}</p>
                             )}
                           </div>
                         </div>
@@ -274,7 +274,7 @@ const Orders = () => {
                             )
                           )}
                           <p>Status: {order.payment ? 'Paid' : 'Pending'}</p>
-                          <p>Total: {currency}{order.amount}</p>
+                          <p>Total: {currency}{Number(order.amount).toFixed(2)}</p>
                         </div>
                       </div>
                       

@@ -87,6 +87,7 @@ const Cart = () => {
                 const minOrderQuantity = productData.minOrderQuantity || 1;
                 const displayPrice = item.selectedPrice || productData.price;
                 const itemTotals = getItemTotal(item._id);
+                const price = productData.price * (1 - productData.customerDiscount / 100)
                 const qty = item.quantity;
 
                 return (
@@ -130,7 +131,7 @@ const Cart = () => {
 <div>
   Price:{" "}
   <span className="font-semibold text-green-600 dark:text-green-400">
-    {currency}{formatPrice(displayPrice)}
+    {currency}{formatPrice(price)}
   </span>
 </div>
 
