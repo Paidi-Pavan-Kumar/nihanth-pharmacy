@@ -41,7 +41,7 @@ const SearchBar = () => {
               // navigate to products page even if input is empty when focused
               navigate('/products');
             }}
-            placeholder="Search medicines, healthcare products..."
+            placeholder="Search items here..."
             className="w-full h-11 pl-4 pr-20 rounded-lg 
                      border-2 border-gray-200 dark:border-gray-700
                      bg-white dark:bg-gray-800 

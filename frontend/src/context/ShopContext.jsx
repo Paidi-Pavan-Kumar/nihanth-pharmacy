@@ -153,6 +153,7 @@ const ShopContextProvider = (props) => {
 
         // Find the product to check for minimum order quantity
         const product = products.find(p => p._id === itemId);
+        console.log(product)
         if (!product) {
             console.error('Product not found');
             return;
@@ -279,43 +280,92 @@ const ShopContextProvider = (props) => {
         }
     }
 
+    const getItemTotal = (itemId) => {
+        const item = cartItems[itemId];
+        if (!item) return { mrp: 0, discount: 0, final: 0 };
+
+        const quantity = typeof item === 'object' ? item.quantity : item;
+        const product = products.find((p) => p._id === itemId);
+        
+        if (!product) return { mrp: 0, discount: 0, final: 0 };
+
+        if (typeof item === 'object' && item.isPackage && item.selectedPrice) {
+            // For package items
+            const packagePrice = parseFloat(item.selectedPrice);
+            return {
+                mrp: packagePrice,
+                discount: 0,
+                final: packagePrice
+            };
+        } else {
+            // For regular items
+            const mrpPrice = product.price * quantity;
+            const discountAmount = (mrpPrice * product.customerDiscount) / 100;
+            const finalPrice = mrpPrice - discountAmount;
+
+            return {
+                mrp: Math.round(mrpPrice * 100) / 100,
+                discount: Math.round(discountAmount * 100) / 100,
+                final: Math.round(finalPrice * 100) / 100
+            };
+        }
+    };
+
     const getCartAmount = () => {
-        let totalAmount = 0;
-        for(const itemId in cartItems){
+        let totals = {
+            mrp: 0,
+            discount: 0,
+            final: 0
+        };
+
+        for (const itemId in cartItems) {
+            const itemTotals = getItemTotal(itemId);
+            totals.mrp += itemTotals.mrp;
+            totals.discount += itemTotals.discount;
+            totals.final += itemTotals.final;
+        }
+
+        // Round all values to 2 decimal places
+        return {
+            mrp: Math.round(totals.mrp * 100) / 100,
+            discount: Math.round(totals.discount * 100) / 100,
+            final: Math.round(totals.final * 100) / 100
+        };
+    };
+
+    // Update getCartItems to include price details
+    const getCartItems = () => {
+        const items = [];
+        for(const itemId in cartItems) {
             const item = cartItems[itemId];
             if (!item) continue;
 
-            if (typeof item === 'object' && item.isPackage && item.selectedPrice) {
-                // For package items, just add the package price (no multiplication)
-                totalAmount += parseFloat(item.selectedPrice);
-            } else {
-                // For regular items, multiply price by quantity
-                const quantity = typeof item === 'object' ? item.quantity : item;
-                if (quantity <= 0) continue;
+            const product = products.find(p => p._id === itemId);
+            if (!product) continue;
 
-                const product = products.find((p) => p._id === itemId);
-                const price = product ? parseFloat(product.price) : 0;
-                totalAmount += price * quantity;
-            }
-        }
-        return Math.round(totalAmount * 100) / 100; // Round to 2 decimal places
-    }
-
-    // Helper function to get individual item total
-    const getItemTotal = (itemId) => {
-        const item = cartItems[itemId];
-        if (!item) return 0;
-
-        if (typeof item === 'object' && item.isPackage && item.selectedPrice) {
-            // For package items, return package price
-            return parseFloat(item.selectedPrice);
-        } else {
-            // For regular items, multiply price by quantity
             const quantity = typeof item === 'object' ? item.quantity : item;
-            const product = products.find((p) => p._id === itemId);
-            const price = product ? parseFloat(product.price) : 0;
-            return price * quantity;
+            if (quantity <= 0) continue;
+
+            const priceDetails = getItemTotal(itemId);
+
+            items.push({
+                _id: itemId,
+                name: product.name,
+                image: product.image[0],
+                quantity: quantity,
+                customerDiscount: product.customerDiscount,
+                promoterDiscount: product.promoterDiscount,
+                isPackage: typeof item === 'object' ? item.isPackage : false,
+                prices: {
+                    mrp: priceDetails.mrp,
+                    discount: priceDetails.discount,
+                    final: priceDetails.final,
+                    unitMrp: product.price,
+                    unitFinal: product.price * (1 - product.customerDiscount / 100)
+                }
+            });
         }
+        return items;
     }
 
     // Get products with filters and pagination
@@ -452,34 +502,6 @@ const ShopContextProvider = (props) => {
             console.log(error);
             toast.error(error.message);
         }
-    }
-
-    const getCartItems = () => {
-        const items = [];
-        for(const itemId in cartItems) {
-            const item = cartItems[itemId];
-            if (!item) continue;
-
-            const product = products.find(p => p._id === itemId);
-            if (!product) continue;
-
-            const quantity = typeof item === 'object' ? item.quantity : item;
-            if (quantity <= 0) continue;
-
-            const price = typeof item === 'object' && item.selectedPrice 
-                ? item.selectedPrice 
-                : product.price;
-
-            items.push({
-                _id: itemId,
-                name: product.name,
-                price: price,
-                image: product.image[0],
-                quantity: quantity,
-                isPackage: typeof item === 'object' ? item.isPackage : false
-            });
-        }
-        return items;
     }
 
     useEffect(() => {

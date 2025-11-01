@@ -43,19 +43,21 @@ const productSchema = new mongoose.Schema({
 })
 
 
-// Virtual field for calculated selling price after customer discount
+// Price after customer discount
 productSchema.virtual('sellingPrice').get(function () {
   return Number((this.price * (1 - this.customerDiscount / 100)).toFixed(2));
 });
 
-// Virtual field for calculated promoter price
-productSchema.virtual('promoterPrice').get(function () {
-  return Number((this.price * (1 - this.promoterDiscount / 100)).toFixed(2));
+// Price after customer + promo code discount
+productSchema.virtual('promoCodePrice').get(function () {
+  const base = this.price * (1 - this.customerDiscount / 100);
+  return Number((base * (1 - this.promoCodeDiscount / 100)).toFixed(2));
 });
 
-// Virtual field for calculated price after promo code
-productSchema.virtual('promoCodePrice').get(function () {
-  return Number((this.price * (1 - this.promoCodeDiscount / 100)).toFixed(2));
+// Price after customer + promoter discount (if applicable)
+productSchema.virtual('promoterPrice').get(function () {
+  const base = this.price * (1 - this.customerDiscount / 100);
+  return Number((base * (1 - this.promoterDiscount / 100)).toFixed(2));
 });
 
 

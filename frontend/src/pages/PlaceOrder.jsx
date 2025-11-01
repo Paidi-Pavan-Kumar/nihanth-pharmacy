@@ -24,7 +24,17 @@ const PlaceOrder = () => {
     getCartItems,
     currency,
   } = useContext(ShopContext);
-
+  
+  // helper to get numeric subtotal from context (supports both old number and new {final,...} shape)
+  const getNumericSubtotal = () => {
+    const totals = getCartAmount();
+    if (typeof totals === "object" && totals !== null) {
+      // prefer final, fallback to mrp or numeric coercion
+      return Number(totals.final ?? totals.total ?? 0);
+    }
+    return Number(totals || 0);
+  };
+  
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -188,11 +198,13 @@ const PlaceOrder = () => {
       setCouponError("");
       setCouponSuccess("");
 
+      const amountToVerify = getNumericSubtotal();
+
       const response = await axios.post(
         backendUrl + "/api/order/verify-coupon",
         {
           couponCode,
-          amount: getCartAmount(),
+          amount: amountToVerify, // ensure numeric
         }
       );
 
@@ -271,17 +283,22 @@ const PlaceOrder = () => {
             phone: formData.billingPhone,
           };
 
-      const subtotal = getCartAmount();
-      const finalAmount = subtotal + delivery_fee - couponDiscount;
+      // use numeric subtotal and ensure amounts are numbers
+      const subtotalNumeric = getNumericSubtotal();
+      const deliveryFeeNumeric = Number(delivery_fee || 0);
+      const couponNumeric = Number(couponDiscount || 0);
+
+      const originalAmount = Number((subtotalNumeric + deliveryFeeNumeric).toFixed(2));
+      const finalAmount = Number((subtotalNumeric + deliveryFeeNumeric - couponNumeric).toFixed(2));
 
       let orderData = {
         address: showAddressForm ? address : selectedAddress,
         billingAddress,
         items: items,
-        amount: finalAmount,
-        originalAmount: subtotal + delivery_fee,
+        amount: finalAmount,           // numeric final payable
+        originalAmount: originalAmount,// numeric original amount (before coupon)
         notes: notes || "",
-        couponCode: couponDiscount > 0 ? couponCode : undefined,
+        couponCode: couponNumeric > 0 ? couponCode : undefined,
         paymentMethod: "COD", // force COD
       };
 
@@ -638,7 +655,7 @@ const PlaceOrder = () => {
             {couponDiscount > 0 && (
               <div className="mt-2 p-2 bg-green-50 dark:bg-green-900 dark:text-green-100 text-green-700 rounded">
                 <p>Discount applied: {currency} {couponDiscount.toFixed(2)}</p>
-                <p>New total: {currency} {(getCartAmount() + delivery_fee - couponDiscount).toFixed(2)}</p>
+                {/* <p>New total: {currency} {(getCartAmount() + delivery_fee - couponDiscount).toFixed(2)}</p> */}
               </div>
             )}
           </div>

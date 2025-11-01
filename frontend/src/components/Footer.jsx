@@ -83,7 +83,7 @@ const Footer = () => {
       rel="noopener noreferrer"
       className="font-medium text-blue-600 hover:underline dark:text-blue-400"
     >
-      Patha Team
+      PaTh Innovations
     </a>{" "}
     | 2025 All Rights Reserved.
   </p>

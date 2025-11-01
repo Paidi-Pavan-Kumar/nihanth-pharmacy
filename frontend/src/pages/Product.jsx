@@ -90,8 +90,11 @@ const Product = () => {
 
   // show price and discount fields requested by user
   const rawPrice = Number(productData.mrp ?? productData.price ?? 0);
+  const promoterDiscount = Number(productData.promoterDiscount ?? 0);
+  const referralDiscount = Number(promoterDiscount / 2);
   const customerDiscount = Number(productData.customerDiscount ?? 0);
   const sellingPrice = rawPrice * (1 - customerDiscount / 100);
+
 
   return (
     <div className="pt-28 pb-16 px-4 sm:px-6 lg:px-12 bg-white dark:bg-gray-800 min-h-screen transition">
@@ -110,11 +113,11 @@ const Product = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {/* Image */}
           <div className="md:col-span-2 flex justify-center">
-            <div className="w-full max-w-md bg-gray-50 dark:bg-gray-900 rounded-lg p-4 flex items-center justify-center border border-gray-100 dark:border-gray-700 shadow-sm">
+            <div className="w-full max-w-[220px] bg-gray-50 dark:bg-gray-900 rounded-lg p-2 flex items-center justify-center border border-gray-100 dark:border-gray-700 shadow-sm">
               <img
                 src={image || FALLBACK_IMG}
                 alt={productData.name}
-                className="w-full max-h-[280px] sm:max-h-[320px] md:max-h-[360px] object-contain"
+                className="w-full max-h-[140px] sm:max-h-[160px] md:max-h-[180px] object-contain"
               />
             </div>
           </div>
@@ -123,12 +126,62 @@ const Product = () => {
           <div className="md:col-span-1">
             <div className="sticky top-24 bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-100 dark:border-gray-700 shadow">
               <div className="flex flex-col gap-2">
-                <div>
-                  <div className="text-2xl md:text-3xl font-bold text-[#02ADEE] dark:text-yellow-400">
+                {/* Price Section - Enhanced Styling */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                  <div className="text-3xl md:text-4xl font-bold text-[#02ADEE] dark:text-[#02ADEE]">
                     {currency} {format(sellingPrice)}
                   </div>
-                  <div className="text-sm text-gray-400 line-through mt-1">MRP {currency} {format(rawPrice)}</div>
-                  <div className="text-xs text-green-600 mt-1">{customerDiscount}% OFF</div>
+                  <div className="flex items-center gap-2 mt-2">MRP
+                    <span className="text-base text-gray-400 line-through">
+                       {currency} {format(rawPrice)}
+                    </span>
+                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm font-medium rounded">
+                      {customerDiscount}% OFF
+                    </span>
+                  </div>
+
+                  {/* You save amount */}
+                  <div className="mt-2 text-sm text-green-700 dark:text-green-300 font-semibold">
+                    You save {currency} {format(Math.max(0, rawPrice - sellingPrice))}
+                  </div>
+                  
+                  {/* Discounts Info */}
+                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div className="grid gap-3">
+                      {/* Customer Discount - Simple row */}
+                      <div className="flex justify-between items-center text-gray-600 dark:text-gray-300 text-sm">
+                        <span>Customer Discount:</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">{customerDiscount}%</span>
+                      </div>
+
+                      {/* Promoter Discount - Compact card */}
+                      <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">Promoter Benefits</div>
+                            <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Use mobile as referral code</div>
+                          </div>
+                          <div className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                            {promoterDiscount}%
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Referral Discount - Compact card */}
+                      <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">Referral Reward</div>
+                            <div className="text-xs text-green-600 dark:text-green-400 mt-0.5">When using referral code</div>
+                          </div>
+                          <div className="text-lg font-semibold text-green-600 dark:text-green-400">
+                            {referralDiscount}%
+                          </div>
+                        </div>
+                      </div>
+                
+                    </div>
+                  </div>
                 </div>
 
                 {/* Compact details */}
@@ -160,7 +213,9 @@ const Product = () => {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={() => {
-                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice });
+                      console.log(productData)
+                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount,
+        promoterDiscount: productData.promoterDiscount });
                       // toast.success("Added to cart");
                     }}
                     className="w-full px-4 py-2 rounded-md bg-[#02ADEE] text-white font-medium hover:opacity-95"
@@ -170,17 +225,14 @@ const Product = () => {
 
                   <button
                     onClick={() => {
-                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice });
+                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount,
+        promoterDiscount: productData.promoterDiscount});
                       navigate("/cart");
                     }}
                     className="w-full px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-50"
                   >
                     Buy now
                   </button>
-                </div>
-
-                <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-                  <p>Customer Discount: <span className="font-medium">{customerDiscount}%</span></p>
                 </div>
               </div>
             </div>
