@@ -19,6 +19,8 @@ import SearchBar from './components/SearchBar'
 import { ToastContainer } from 'react-toastify';
 import Verify from './pages/Verify'
 import Policy from './pages/Policy'
+import UploadPrescription from './pages/UploadPrescription'
+import ConsultDoctor from './pages/ConsultDoctor'
 
 
 const App = () => {
@@ -36,6 +38,8 @@ const App = () => {
           <Route path = '/contact' element = {<Contact/>}/>
           <Route path = '/product/:productId' element = {<Product/>}/>
           <Route path = '/cart' element = {<Cart/>}/>
+          <Route path = "/upload-prescription" element={<UploadPrescription />} /> // TODO: "Add this route after implementing prescription upload feature
+          <Route path = "/consult-doctor" element={<ConsultDoctor />} /> // TODO: "Add this route after implementing doctor consultation feature
           <Route path = '/login' element = {<Login/>}/>
           <Route path = '/place-order' element = {<PlaceOrder/>}/>
           <Route path = '//guest-checkout' element = {<GuestCheckout/>}/>

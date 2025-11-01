@@ -16,12 +16,12 @@ const Feature = () => {
                 "Fast 12–24 hour delivery for all medicines in your area",
               icon: "🚚",
             },
-            {
-              title: "24/7 Support",
-              description:
-                "Round-the-clock customer support and pharmacist consultation available",
-              icon: "📞",
-            },
+            // {
+            //   title: "24/7 Support",
+            //   description:
+            //     "Round-the-clock customer support and pharmacist consultation available",
+            //   icon: "📞",
+            // },
             {
               title: "Exclusive Discounts",
               description:

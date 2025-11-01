@@ -28,6 +28,14 @@ const NavBar = () => {
                     <p>HOME</p>
                 </NavLink>
 
+                <NavLink to='/upload-prescription' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
+                    <p>Upload Precription</p>
+                </NavLink>
+
+                <NavLink to='/consult-doctor' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
+                    <p>Consult Doctor</p>
+                </NavLink>
+
                 <NavLink to='/products' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
                     <p>PRODUCTS</p>
                 </NavLink>
@@ -104,6 +112,8 @@ const NavBar = () => {
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/'>HOME</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/products'>PRODUCTS</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/orders'>ORDER</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/consult-doctor'>Consult Doctor</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/upload-prescription'>Upload Prescription</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/contact'>CONTACT</NavLink>
                 </div>
             </div>
