@@ -1,4 +1,5 @@
 import {Routes, Route} from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import Collection from './pages/Collection'
@@ -24,33 +25,57 @@ import ConsultDoctor from './pages/ConsultDoctor'
 
 
 const App = () => {
-  return(
-    <div className='bg-white dark:bg-gray-800 transition-colors font-sans'>
-      <ScrollToTop/>
+  const location = useLocation();
+
+  const showSearchBar =
+    location.pathname === '/' ||
+    location.pathname.startsWith('/products');
+
+  return (
+    <div className='min-h-screen flex flex-col bg-white dark:bg-gray-800 transition-colors font-sans'>
+      <ScrollToTop />
       <ToastContainer position='bottom-right' autoClose={2000} />
-      <NavBar />
-      <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] pt-20'>
-        <SearchBar />
-        <Routes>
-          <Route path = '/' element = {<Home/>}/>
-          <Route path = '/products' element = {<Collection/>}/>
-          <Route path = '/about' element = {<About/>}/>
-          <Route path = '/contact' element = {<Contact/>}/>
-          <Route path = '/product/:productId' element = {<Product/>}/>
-          <Route path = '/cart' element = {<Cart/>}/>
-          <Route path = "/upload-prescription" element={<UploadPrescription />} /> // TODO: "Add this route after implementing prescription upload feature
-          <Route path = "/consult-doctor" element={<ConsultDoctor />} /> // TODO: "Add this route after implementing doctor consultation feature
-          <Route path = '/login' element = {<Login/>}/>
-          <Route path = '/place-order' element = {<PlaceOrder/>}/>
-          <Route path = '//guest-checkout' element = {<GuestCheckout/>}/>
-          <Route path = '/orders' element = {<Orders/>}/>
-          <Route path = '/verify' element = {<Verify/>}/>
-          <Route path = '/policy' element = {<Policy/>}/>
-          <Route path = '/blogs' element = {<Blogs/>}/>
-          <Route path = '/blog/:id' element = {<BlogDetail/>}/>
-        </Routes>
+      
+      {/* Fixed navbar */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm">
+        <NavBar />
       </div>
-      <div className='fixed bottom-4 right-4'>
+
+      {/* Main content */}
+      <div className='flex-grow'>
+        {/* Search bar with gap */}
+        {showSearchBar && (
+          <div className="fixed top-16 left-0 right-0 z-40 bg-white dark:bg-gray-800">
+            <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] py-4 mt-2">
+              <SearchBar />
+            </div>
+          </div>
+        )}
+
+        {/* Main content with adjusted padding */}
+        <div className={`px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] ${showSearchBar ? 'pt-36' : 'pt-20'}`}>
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/products' element={<Collection />} />
+            <Route path='/about' element={<About />} />
+            <Route path='/contact' element={<Contact />} />
+            <Route path='/product/:productId' element={<Product />} />
+            <Route path='/cart' element={<Cart />} />
+            <Route path = "/upload-prescription" element={<UploadPrescription />} />
+            <Route path = "/consult-doctor" element={<ConsultDoctor />} />
+            <Route path = '/login' element={<Login />} />
+            <Route path = '/place-order' element={<PlaceOrder />} />
+            <Route path = '//guest-checkout' element={<GuestCheckout />} />
+            <Route path = '/orders' element={<Orders />} />
+            <Route path = '/verify' element={<Verify />} />
+            <Route path = '/policy' element={<Policy />} />
+            <Route path = '/blogs' element={<Blogs />} />
+            <Route path = '/blog/:id' element={<BlogDetail />} />
+          </Routes>
+        </div>
+      </div>
+
+      <div className='fixed bottom-4 right-4 z-40'>
         <WhatsAppButton />
       </div>
       <Footer />

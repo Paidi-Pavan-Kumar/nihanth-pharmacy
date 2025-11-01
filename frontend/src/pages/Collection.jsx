@@ -44,17 +44,17 @@ const Collection = () => {
   // Fetch initial products only once when component mounts
   useEffect(() => {
     if (!initialized) {
-      // Make an initial fetch with empty filters to get all products
+      // Preserve any existing search from context instead of clearing it
       updateFilters({ 
         category: [],
         subCategory: [],
         sortBy: 'date',
         sortOrder: 'desc',
-        search: ''
+        search: search || ''    // <--- changed to preserve context search
       });
       setInitialized(true);
     }
-  }, [initialized, updateFilters]);
+  }, [initialized, updateFilters, search]);
   
   const handleCategoryToggle = (value) => {
     let newCategories;
@@ -197,7 +197,7 @@ const Collection = () => {
     <div className='flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t dark:border-gray-700 dark:bg-gray-800'>
       {/* Filter Section */}
       <div className='min-w-60'>
-        <div className="flex items-center justify-between mb-4">
+        {/* <div className="flex items-center justify-between mb-4">
           <p onClick={() => setShowFilter(!showFilter)} className='text-xl flex items-center cursor-pointer gap-2 dark:text-gray-200'>
             FILTERS
             <img
@@ -213,7 +213,7 @@ const Collection = () => {
           >
             <X size={14} /> Clear All
           </button>
-        </div>
+        </div> */}
         
         {/* Active filters display */}
         {(categoryFilters.length > 0 || subCategoryFilters.length > 0 || search) && (
@@ -259,162 +259,36 @@ const Collection = () => {
           </div>
         )}
         
-        <div className={`border border-gray-300 dark:border-gray-700 pl-5 py-3 mt-6 ${showFilter ? '' : 'hidden'} sm:block dark:bg-gray-800`}>
-          <p className='mb-3 text-sm font-medium dark:text-gray-200'>CATEGORIES</p>
-          <div className='flex flex-col gap-2 text-sm font-light text-gray-700 dark:text-gray-300'>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Prescription' 
-                checked={categoryFilters.includes('Prescription')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Prescription Medicines
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='OTC' 
-                checked={categoryFilters.includes('OTC')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Over The Counter
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Healthcare' 
-                checked={categoryFilters.includes('Healthcare')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Healthcare Devices
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Wellness' 
-                checked={categoryFilters.includes('Wellness')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Wellness Products
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Personal Care' 
-                checked={categoryFilters.includes('Personal Care')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Personal Care
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Ayurvedic' 
-                checked={categoryFilters.includes('Ayurvedic')}
-                onChange={(e) => handleCategoryToggle(e.target.value)} 
-              /> 
-              Ayurvedic Medicines
-            </p>
-          </div>
-        </div>
+        <div className="hidden" aria-hidden="true" />
 
-        <div className={`border border-gray-300 dark:border-gray-700 pl-5 py-3 mt-6 ${showFilter ? '' : 'hidden'} sm:block dark:bg-gray-800`}>
-          <p className='mb-3 text-sm font-medium dark:text-gray-200'>TYPE</p>
-          <div className='flex flex-col gap-2 text-sm font-light text-gray-700 dark:text-gray-300'>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Tablets' 
-                checked={subCategoryFilters.includes('Tablets')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Tablets
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Capsules' 
-                checked={subCategoryFilters.includes('Capsules')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Capsules
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Syrups' 
-                checked={subCategoryFilters.includes('Syrups')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Syrups
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Injectables' 
-                checked={subCategoryFilters.includes('Injectables')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Injectables
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Topical' 
-                checked={subCategoryFilters.includes('Topical')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Topical Applications
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Drops' 
-                checked={subCategoryFilters.includes('Drops')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Drops
-            </p>
-            <p className='flex gap-2'>
-              <input 
-                className='w-3 accent-gray-700 dark:accent-yellow-400' 
-                type='checkbox' 
-                value='Equipment' 
-                checked={subCategoryFilters.includes('Equipment')}
-                onChange={(e) => handleSubCategoryToggle(e.target.value)}
-              /> 
-              Medical Equipment
-            </p>
-          </div>
-        </div>
+        {/* Type filter - hidden */}
+        <div className="hidden" aria-hidden="true" />
       </div>
 
       {/* Products Section */}
       <div className='flex-1'>
         <div className='flex justify-between items-center text-base sm:text-2xl mb-4'>
           <Title text1={'ALL'} text2={'PRODUCTS'} />
-          <select 
-            onChange={(e) => handleSortChange(e.target.value)} 
-            value={sortOption}
-            className='border-2 border-gray-300 dark:border-gray-700 text-sm px-2 dark:bg-gray-800 dark:text-gray-200'
-          >
-            <option value="relevant">Sort by: relevant</option>
-            <option value="low-high">Sort by: Price low to high</option>
-            <option value="high-low">Sort by: Price high to low</option>
-          </select>
+
+          <div className="relative inline-block">
+            <select 
+              onChange={(e) => handleSortChange(e.target.value)} 
+              value={sortOption}
+              aria-label="Sort products"
+              className="appearance-none pl-3 pr-10 py-2 h-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#02ADEE] focus:border-[#02ADEE] transition-colors"
+            >
+              <option value="relevant">Sort by: relevant</option>
+              <option value="low-high">Sort by: Price low to high</option>
+              <option value="high-low">Sort by: Price high to low</option>
+            </select>
+
+            {/* custom arrow */}
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 12a1 1 0 01-.707-.293l-4-4a1 1 0 111.414-1.414L10 9.586l3.293-3.293a1 1 0 011.414 1.414l-4 4A1 1 0 0110 12z" clipRule="evenodd" />
+              </svg>
+            </span>
+          </div>
         </div>
 
         {loading ? (

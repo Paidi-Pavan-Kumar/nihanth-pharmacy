@@ -63,6 +63,7 @@ const RelatedProducts = ({category, subCategory, productId}) => {
               name={item.name} 
               price={item.price} 
               image={item.image}
+              customerDiscount={item.customerDiscount}
               quantityPriceList={item.quantityPriceList}
             />
           ))}

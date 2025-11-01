@@ -29,11 +29,11 @@ const NavBar = () => {
                 </NavLink>
 
                 <NavLink to='/upload-prescription' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
-                    <p>Upload Precription</p>
+                    <p>UPLOAD PRESCRIPTION</p>
                 </NavLink>
 
                 <NavLink to='/consult-doctor' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
-                    <p>Consult Doctor</p>
+                    <p>CONSULT DOCTOR</p>
                 </NavLink>
 
                 <NavLink to='/products' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
@@ -54,12 +54,12 @@ const NavBar = () => {
                 <ThemeSwitcher />
 
                 <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
-                    <img 
+                    {/* <img 
                         onClick={() => { setShowSearch(true); navigate('/products') }} 
                         src={assets.search_icon} 
                         className='w-5 cursor-pointer dark:invert' 
                         alt="search"
-                    />
+                    /> */}
 
                     {/* profile icon - make slightly larger and always visible on mobile */}
                     <div className='group relative'>
@@ -73,7 +73,7 @@ const NavBar = () => {
                             <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4 z-50'>
                                 <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded shadow-lg'>
                                     <p onClick={() => navigate('/orders')} className='cursor-pointer hover:text-black dark:hover:text-white'>Orders</p>
-                                    <p onClick={logout} className='cursor-pointer hover:text-black dark:hover:text-white'>Log-Out</p>
+                                    <p onClick={logout} className='cursor-pointer hover:text-black dark:hover:text-white'>Logout</p>
                                 </div>
                             </div>}
                     </div>
@@ -112,8 +112,8 @@ const NavBar = () => {
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/'>HOME</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/products'>PRODUCTS</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/orders'>ORDER</NavLink>
-                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/consult-doctor'>Consult Doctor</NavLink>
-                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/upload-prescription'>Upload Prescription</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/consult-doctor'>CONSULT DOCTOR</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/upload-prescription'>UPLOAD PRESCRIPTION</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/contact'>CONTACT</NavLink>
                 </div>
             </div>

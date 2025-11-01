@@ -1,11 +1,13 @@
-import { Link } from 'react-router-dom'
-import { FileText, UserRound } from 'lucide-react'
+import { useState, useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FileText, UserRound, Search, Pill } from 'lucide-react'
+import { ShopContext } from '../context/ShopContext'
 import Hero from '../components/Hero'
+import SearchBar from '../components/SearchBar'
 import BestSeller from '../components/BestSeller'
 import NewsLetterBox from '../components/NewsLetterBox'
 import Feature from '../components/Feature'
-import Testimonials from '../components/Testimonials'
-
+import { Link } from 'react-router-dom'
 const ServiceCard = ({ icon: Icon, title, description, to }) => (
   <Link 
     to={to}
@@ -19,10 +21,13 @@ const ServiceCard = ({ icon: Icon, title, description, to }) => (
   </Link>
 );
 
+
 const Home = () => {
   return (
     <div>
+
       <Hero />
+      
       
       {/* Service Cards Section */}
       <div className="px-4 py-12 bg-gray-50 dark:bg-gray-900">
@@ -31,6 +36,12 @@ const Home = () => {
             Our Services
           </h2>
           <div className="flex flex-col sm:flex-row gap-6 max-w-3xl mx-auto">
+            <ServiceCard
+              icon={Pill}
+              title="Search Medicines"
+              description="Find and order genuine medicines from our wide range of products"
+              to="/products"
+            />
             <ServiceCard
               icon={FileText}
               title="Upload Prescription"
