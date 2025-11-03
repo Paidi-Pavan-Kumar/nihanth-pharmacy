@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { ShopContext } from '../context/ShopContext';
-import { toast } from 'react-toastify';
-import axios from 'axios';
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { ShopContext } from "../context/ShopContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const UploadPrescription = () => {
   const navigate = useNavigate();
@@ -11,25 +11,26 @@ const UploadPrescription = () => {
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    notes: ''
+    name: "",
+    phone: "",
+    email: "",
+    notes: "",
   });
 
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    
+
     // Validate each file
-    const validFiles = selectedFiles.filter(file => {
-      const isValid = file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024; // 5MB
+    const validFiles = selectedFiles.filter((file) => {
+      const isValid =
+        file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024; // 5MB
       if (!isValid) {
         toast.error(`${file.name} must be an image under 5MB`);
       }
       return isValid;
     });
 
-    setFiles(prev => [...prev, ...validFiles]);
+    setFiles((prev) => [...prev, ...validFiles]);
   };
 
   const removeFile = (index) => {
@@ -38,14 +39,14 @@ const UploadPrescription = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!files.length) {
-      toast.error('Please upload at least one prescription image');
+      toast.error("Please upload at least one prescription image");
       return;
     }
 
     if (!formData.name || !formData.phone) {
-      toast.error('Name and phone are required');
+      toast.error("Name and phone are required");
       return;
     }
 
@@ -53,27 +54,49 @@ const UploadPrescription = () => {
       setLoading(true);
 
       const formPayload = new FormData();
-      files.forEach(file => formPayload.append('prescriptions', file));
-      Object.keys(formData).forEach(key => formPayload.append(key, formData[key]));
+      files.forEach((file, index) => {
+        formPayload.append(`image${index + 1}`, file);
+      });
+      Object.keys(formData).forEach((key) =>
+        formPayload.append(key, formData[key])
+      );
+
+      // Add these console.logs to inspect the request data
+      console.log("Files being sent:", files);
+      console.log("Form data being sent:", formData);
+
+      // To see the actual FormData contents
+      for (let pair of formPayload.entries()) {
+        console.log(pair[0] + ": ", pair[1]);
+      }
 
       const config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          ...(token && { token })
-        }
+          "Content-Type": "multipart/form-data",
+          ...(token && { token: token }),
+        },
       };
 
-      const response = await axios.post(`${backendUrl}/api/prescription/upload`, formPayload, config);
+      // Log the full request configuration
+      console.log("Request config:", config);
+
+      const response = await axios.post(
+        `${backendUrl}/api/prescription/upload`,
+        formPayload,
+        config
+      );
 
       if (response.data.success) {
-        toast.success('Prescription uploaded successfully');
-        navigate('/orders');
+        toast.success("Prescription uploaded successfully");
+        navigate("/orders");
       } else {
         throw new Error(response.data.message);
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message || 'Failed to upload prescription');
+      toast.error(
+        error.response?.data?.message || "Failed to upload prescription"
+      );
     } finally {
       setLoading(false);
     }
@@ -83,7 +106,9 @@ const UploadPrescription = () => {
     <div className="min-h-screen pt-20 pb-10 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden p-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Upload Prescription</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Upload Prescription
+          </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* File Upload Area */}
@@ -91,7 +116,7 @@ const UploadPrescription = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Upload Prescription Images
               </label>
-              
+
               <div className="flex flex-wrap gap-4">
                 {files.map((file, index) => (
                   <div key={index} className="relative group">
@@ -122,7 +147,7 @@ const UploadPrescription = () => {
                   />
                 </label>
               </div>
-              
+
               <p className="text-xs text-gray-500">
                 Upload clear images of your prescription (max 5MB each)
               </p>
@@ -138,7 +163,9 @@ const UploadPrescription = () => {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
@@ -151,7 +178,9 @@ const UploadPrescription = () => {
                   type="tel"
                   required
                   value={formData.phone}
-                  onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
@@ -163,7 +192,9 @@ const UploadPrescription = () => {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
               </div>
@@ -175,7 +206,9 @@ const UploadPrescription = () => {
                 <textarea
                   rows={3}
                   value={formData.notes}
-                  onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, notes: e.target.value }))
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   placeholder="Any specific instructions or details..."
                 />
