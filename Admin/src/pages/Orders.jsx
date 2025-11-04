@@ -257,7 +257,7 @@ const Orders = ({ token }) => {
             />
           </div>
         </div>
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-600">
             Payment Type
           </label>
@@ -278,7 +278,7 @@ const Orders = ({ token }) => {
               <option value="western_union">Western Union</option>
             </select>
           </div>
-        </div>
+        </div> */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-600">
             Order Status

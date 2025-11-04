@@ -62,7 +62,7 @@ const Sidebar = () => {
           <p className="hidden md:block">Wallet</p>
         </NavLink>
 
-        <NavLink
+        {/* <NavLink
           className="flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l"
           to="/crypto-wallets"
         >
@@ -76,7 +76,7 @@ const Sidebar = () => {
         >
           <FileText className="w-5 h-5" />
           <p className="hidden md:block">Blog Management</p>
-        </NavLink>
+        </NavLink> */}
       </div>
     </div>
   );

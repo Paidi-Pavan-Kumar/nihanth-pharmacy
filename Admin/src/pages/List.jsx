@@ -210,8 +210,8 @@ const List = ({ token }) => {
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-600">Category</label>
-          <div className="flex items-center gap-2 border rounded p-2 bg-white border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+          {/* <label className="text-sm font-medium text-gray-600">Category</label> */}
+          {/* <div className="flex items-center gap-2 border rounded p-2 bg-white border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
             <Filter className="w-4 h-4 text-gray-500" />
             <select
               value={filters.category}
@@ -228,10 +228,10 @@ const List = ({ token }) => {
               <option value="Personal Care">Personal Care</option>
               <option value="Ayurvedic">Ayurvedic Medicines</option>
             </select>
-          </div>
+          </div> */}
         </div>
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-600">Sub Category</label>
+          {/* <label className="text-sm font-medium text-gray-600">Sub Category</label>
           <div className="flex items-center gap-2 border rounded p-2 bg-white border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
             <Filter className="w-4 h-4 text-gray-500" />
             <select
@@ -250,9 +250,9 @@ const List = ({ token }) => {
               <option value="Drops">Drops</option>
               <option value="Equipment">Medical Equipment</option>
             </select>
-          </div>
+          </div> */}
         </div>
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-gray-600">Special Filters</label>
           <div className="flex flex-col gap-2">
             <label className="flex items-center gap-2">
@@ -275,8 +275,8 @@ const List = ({ token }) => {
               />
               <span className="text-sm text-gray-600">Has Quantity Price</span>
             </label>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
 
       {/* Products Table */}
@@ -295,18 +295,25 @@ const List = ({ token }) => {
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Name
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Category
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Sub Category
-              </th>
+              </th> */}
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Price
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Min Qty
+                Customer Discount
               </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Promoter Discount
+              </th>
+
+              {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Min Qty
+              </th> */}
               <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                 Actions
               </th>
@@ -321,12 +328,13 @@ const List = ({ token }) => {
                 <td className="px-4 py-4">
                   <div className="text-sm font-medium text-gray-800">{item.name}</div>
                 </td>
-                <td className="px-4 py-4">
+  
+                {/* <td className="px-4 py-4">
                   <div className="text-sm text-gray-800">{item.category}</div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="text-sm text-gray-800">{item.subCategory}</div>
-                </td>
+                </td> */}
                 <td className="px-4 py-4">
                   <div className="text-sm font-medium text-gray-800">
                     {item.quantityPriceList ? (
@@ -340,11 +348,18 @@ const List = ({ token }) => {
                     )}
                   </div>
                 </td>
+
                 <td className="px-4 py-4">
+                  <div className="text-sm font-medium text-gray-800">{item.customerDiscount}</div>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="text-sm font-medium text-gray-800">{item.promoterDiscount}</div>
+                </td>
+                {/* <td className="px-4 py-4">
                   <div className="text-sm text-gray-800">
                     {item.minOrderQuantity > 1 ? item.minOrderQuantity : '-'}
                   </div>
-                </td>
+                </td> */}
                 <td className="px-4 py-4">
                   <div className="flex items-center justify-center space-x-3">
                     <button

@@ -18,6 +18,10 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [packing, setPacking] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [customerDiscount, setCustomerDiscount] = useState("0");
+  const [promoterDiscount, setPromoterDiscount] = useState("0");
   const [category, setCategory] = useState("None");
   const [subCategory, setSubCategory] = useState("None");
   const [bestseller, setBestseller] = useState(false);
@@ -35,7 +39,11 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
     if (editMode && product) {
       setName(product.name);
       setDescription(product.description);
+      setPacking(product.packing);
+      setCompanyName(product.companyName);
       setPrice(product.price.toString());
+      setCustomerDiscount(product.customerDiscount.toString());
+      setPromoterDiscount(product.promoterDiscount.toString());
       setCategory(product.category);
       setSubCategory(product.subCategory);
       setBestseller(product.bestseller);
@@ -45,26 +53,15 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
       
       if (product.quantityPriceList) {
         setEnableQuantityPriceList(true);
-        
-        // Check if quantityPriceList is already an object or a JSON string
-        let parsedList;
-        if (typeof product.quantityPriceList === 'string') {
-          try {
-            parsedList = JSON.parse(product.quantityPriceList);
-          } catch (error) {
-            console.error("Error parsing quantityPriceList:", error);
-            parsedList = [];
-          }
-        } else if (Array.isArray(product.quantityPriceList)) {
-          parsedList = product.quantityPriceList;
-        } else {
-          parsedList = [];
+        try {
+          const parsedList = typeof product.quantityPriceList === 'string' 
+            ? JSON.parse(product.quantityPriceList)
+            : product.quantityPriceList;
+          setQuantityPriceList(parsedList);
+        } catch (error) {
+          console.error("Error parsing quantityPriceList:", error);
+          setQuantityPriceList([]);
         }
-        
-        setQuantityPriceList(parsedList);
-        setPrice("0");
-      } else {
-        setEnableQuantityPriceList(false);
       }
     }
   }, [editMode, product]);
@@ -120,27 +117,28 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
     e.preventDefault();
 
     try {
-      // Validate quantity price list if enabled
-      if (enableQuantityPriceList) {
-        const hasEmptyValues = quantityPriceList.some(item => 
-          !item.quantity.trim() || !item.price.trim()
-        );
-        if (hasEmptyValues) {
-          toast.error("Please fill all quantity and price fields");
-          return;
-        }
+      // Validate required fields
+      if (!name || !packing || !companyName || !price || 
+          customerDiscount === undefined || promoterDiscount === undefined) {
+        toast.error("Please fill all required fields");
+        return;
+      }
 
-        const sortedList = [...quantityPriceList].sort((a, b) => 
-          parseInt(a.quantity) - parseInt(b.quantity)
-        );
-        setQuantityPriceList(sortedList);
+      // Validate discounts
+      if (Number(customerDiscount) < 0 || Number(customerDiscount) > 100 ||
+          Number(promoterDiscount) < 0 || Number(promoterDiscount) > 100) {
+        toast.error("Discounts must be between 0 and 100");
+        return;
       }
 
       const formData = new FormData();
-
       formData.append("name", name);
+      formData.append("packing", packing);
+      formData.append("companyName", companyName);
       formData.append("description", description);
       formData.append("price", price);
+      formData.append("customerDiscount", customerDiscount);
+      formData.append("promoterDiscount", promoterDiscount);
       formData.append("category", category);
       formData.append("subCategory", subCategory);
       formData.append("bestseller", bestseller);
@@ -195,6 +193,10 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
           setImage3(false);
           setImage4(false);
           setPrice("");
+          setPacking("");
+          setCompanyName("");
+          setCustomerDiscount("0");
+          setPromoterDiscount("0");
           setMinOrderQuantity("1");
           setEnableMinOrder(false);
           setEnableQuantityPriceList(false);
@@ -215,7 +217,7 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -309,6 +311,30 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
         />
       </div>
 
+      <div className="w-full">
+        <p className="mb-2">Packing*</p>
+        <input
+          onChange={(e) => setPacking(e.target.value)}
+          value={packing}
+          className="w-full max-w-[500px] px-3 py-2"
+          type="text"
+          placeholder="e.g., 10 tablets"
+          required
+        />
+      </div>
+
+      <div className="w-full">
+        <p className="mb-2">Company Name*</p>
+        <input
+          onChange={(e) => setCompanyName(e.target.value)}
+          value={companyName}
+          className="w-full max-w-[500px] px-3 py-2"
+          type="text"
+          placeholder="Company name"
+          required
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:gap-8">
         <div>
           <p className="mb-2">Product Category</p>
@@ -355,6 +381,36 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
             placeholder="25"
             disabled={enableQuantityPriceList}
             title={enableQuantityPriceList ? "Price is managed through quantity price list" : ""}
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 w-full">
+        <div>
+          <p className="mb-2">Customer Discount (%)*</p>
+          <input
+            onChange={(e) => setCustomerDiscount(e.target.value)}
+            value={customerDiscount}
+            className="w-full px-3 py-2 sm:w-[120px]"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            required
+          />
+        </div>
+
+        <div>
+          <p className="mb-2">Promoter Discount (%)*</p>
+          <input
+            onChange={(e) => setPromoterDiscount(e.target.value)}
+            value={promoterDiscount}
+            className="w-full px-3 py-2 sm:w-[120px]"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            required
           />
         </div>
       </div>
