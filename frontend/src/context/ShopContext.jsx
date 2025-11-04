@@ -153,7 +153,6 @@ const ShopContextProvider = (props) => {
 
         // Find the product to check for minimum order quantity
         const product = products.find(p => p._id === itemId);
-        console.log(product)
         if (!product) {
             console.error('Product not found');
             return;

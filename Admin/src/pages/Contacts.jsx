@@ -10,6 +10,9 @@ const Contacts = ({ token }) => {
   const [selectedContact, setSelectedContact] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+  // store fetched passwords keyed by phone
+  const [passwords, setPasswords] = useState({}); // { [phone]: { loading, value, error } }
+
   const fetchContacts = async () => {
     try {
       setLoading(true);
@@ -29,6 +32,39 @@ const Contacts = ({ token }) => {
       toast.error('Failed to fetch contacts');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // fetch password by phone number from backend endpoint /gpbypn
+  const fetchPasswordByPhone = async (phone) => {
+    if (!phone) {
+      toast.error('Phone number not available');
+      return;
+    }
+    const key = String(phone);
+    if (passwords[key]?.loading) return;
+
+    setPasswords(prev => ({ ...prev, [key]: { loading: true } }));
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/user/gpbypn`,
+        { phoneNumber: key },
+        { headers: { token } }
+      );
+
+      if (res.data && res.data.success) {
+        // backend may return { password } or { user: { password } }
+        const value = res.data.password ?? res.data.user?.password ?? res.data.data?.password ?? null;
+        setPasswords(prev => ({ ...prev, [key]: { loading: false, value } }));
+      } else {
+        const msg = res.data?.message || 'No password returned';
+        setPasswords(prev => ({ ...prev, [key]: { loading: false, error: msg } }));
+        toast.error(msg);
+      }
+    } catch (err) {
+      console.error('gpbypn error:', err);
+      setPasswords(prev => ({ ...prev, [key]: { loading: false, error: err.message || 'Failed' } }));
+      toast.error('Failed to fetch password');
     }
   };
 
@@ -148,6 +184,7 @@ const Contacts = ({ token }) => {
                 <th className="py-2 px-4 border text-left">Name</th>
                 <th className="py-2 px-4 border text-left">Email</th>
                 <th className="py-2 px-4 border text-left">Phone</th>
+                <th className="py-2 px-4 border text-left">Password</th>
                 <th className="py-2 px-4 border text-left">Status</th>
                 <th className="py-2 px-4 border text-left">Date</th>
                 <th className="py-2 px-4 border text-left">Actions</th>
@@ -159,6 +196,26 @@ const Contacts = ({ token }) => {
                   <td className="py-2 px-4 border">{contact.name}</td>
                   <td className="py-2 px-4 border">{contact.email}</td>
                   <td className="py-2 px-4 border">{contact.phone}</td>
+                  <td className="py-2 px-4 border">
+                    {(() => {
+                      const key = String(contact.phone ?? '');
+                      const entry = passwords[key];
+                      if (entry?.value) {
+                        return <span className="font-mono text-sm">{entry.value}</span>;
+                      }
+                      if (entry?.error) {
+                        return <span className="text-xs text-red-600">Error</span>;
+                      }
+                      return (
+                        <button
+                          onClick={() => fetchPasswordByPhone(contact.phone)}
+                          className="px-2 py-1 bg-yellow-500 text-white rounded text-sm"
+                        >
+                          {entry?.loading ? 'Loading...' : 'Get Password'}
+                        </button>
+                      );
+                    })()}
+                  </td>
                   <td className="py-2 px-4 border">
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(contact.status)}`}>
                       {contact.status}
@@ -256,4 +313,4 @@ const Contacts = ({ token }) => {
   );
 };
 
-export default Contacts; 
+export default Contacts;

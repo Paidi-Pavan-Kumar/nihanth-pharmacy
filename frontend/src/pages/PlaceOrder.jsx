@@ -644,7 +644,7 @@ const PlaceOrder = () => {
 
           <div className="mt-4">
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-              Apply Coupon
+              Apply Referral Code
             </label>
             <div className="flex space-x-2">
               <input
@@ -652,7 +652,7 @@ const PlaceOrder = () => {
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 className="flex-grow border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
-                placeholder="Enter coupon code"
+                placeholder="Enter Referral code"
               />
               <button
                 type="button"

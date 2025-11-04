@@ -61,14 +61,7 @@ const UploadPrescription = () => {
         formPayload.append(key, formData[key])
       );
 
-      // Add these console.logs to inspect the request data
-      console.log("Files being sent:", files);
-      console.log("Form data being sent:", formData);
-
-      // To see the actual FormData contents
-      for (let pair of formPayload.entries()) {
-        console.log(pair[0] + ": ", pair[1]);
-      }
+      
 
       const config = {
         headers: {
@@ -77,8 +70,7 @@ const UploadPrescription = () => {
         },
       };
 
-      // Log the full request configuration
-      console.log("Request config:", config);
+      
 
       const response = await axios.post(
         `${backendUrl}/api/prescription/upload`,

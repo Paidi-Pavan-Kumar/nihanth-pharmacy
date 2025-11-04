@@ -99,9 +99,9 @@ const Wallet = () => {
                 <ul className="mt-3 text-sm text-gray-700 list-disc list-inside space-y-2">
                   <li><span className="font-semibold">Customer discount</span> — lowers product price for all customers.</li>
                   <li><span className="font-semibold">Promoter discount</span> — percent assigned per product; commission calculated when code is used.</li>
-                  <li><span className="font-semibold">Your discount</span> — buyer using the promoter code gets 50% of promoter commission; promoter gets remaining 50% after delivery.</li>
+                  <li><span className="font-semibold">Your discount</span> — buyer using the promoter code gets 50% of promoter commission; promoter gets commission after delivery.</li>
                 </ul>
-                <p className="mt-3 text-xs text-gray-500">Example: Product ₹1000 → after customer discount ₹900. Promoter discount 10% → ₹90. Buyer gets ₹45 off; promoter earns ₹45 after delivery.</p>
+                <p className="mt-3 text-xs text-gray-500">Example: Product ₹1000 → after customer discount ₹900. Promoter discount 10% → ₹90. Buyer gets ₹45 off; promoter earns ₹90 after delivery.</p>
 
                 {/* Promotional link */}
                 <div className="mt-3 text-sm">

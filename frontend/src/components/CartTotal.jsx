@@ -12,7 +12,6 @@ const CartTotal = ({ couponDiscount = 0 }) => {
     });
   };
 
-  console.log(getCartItems());
 
   // Get cart totals including MRP, discount and final price
   const { mrp, discount, final } = getCartAmount();
@@ -50,6 +49,22 @@ const CartTotal = ({ couponDiscount = 0 }) => {
         {/* Free Shipping Section */}
         <div className="flex justify-between items-center py-2">
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Shipping</p>
+          <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+            FREE
+          </span>
+        </div>
+
+        {/* Handling charges - Free */}
+        <div className="flex justify-between items-center py-2">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Handling charges</p>
+          <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+            FREE
+          </span>
+        </div>
+
+        {/* Packing charges - Free */}
+        <div className="flex justify-between items-center py-2">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Packing charges</p>
           <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
             FREE
           </span>

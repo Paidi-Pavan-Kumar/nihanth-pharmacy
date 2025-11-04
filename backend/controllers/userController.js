@@ -3,7 +3,6 @@ import bycrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from '../models/userModel.js';
 import couponModel from "../models/couponModel.js";
-
 const createToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET)
 }
@@ -31,7 +30,6 @@ const loginUser = async (req, res) => {
         }
 
         const isMatch = password === user.password
-        console.log(isMatch)
         if (isMatch) {
             const token = createToken(user._id)
             res.json({success: true, token})
@@ -127,4 +125,18 @@ const adminLogin = async (req, res) => {
     }
 }
 
-export { loginUser, registerUser, adminLogin}
+const getPassword = async(req,res)=>{
+    try {
+        const {phoneNumber} = req.body;
+        const user = await userModel.findOne({phoneNumber});
+        if(!user){
+            return res.json({success:false,message:'User Not Found'})
+        }
+        res.json({success:true,password:user.password})
+    } catch (error) {
+        console.log(error)
+        res.json({success:false,message:error.message})
+    }
+}
+
+export { loginUser, registerUser, adminLogin, getPassword}

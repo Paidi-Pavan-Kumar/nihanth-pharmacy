@@ -37,7 +37,7 @@ const placeOrder = async (req, res) => {
         let couponDetails = null;
         if (couponCode) {
             const couponResult = await applyCoupon(couponCode, originalAmount, amount);
-            console.log("applyCoupon result:", couponResult);
+        
             if (couponResult.success) {
                 couponDetails = couponResult.couponDetails;
                 finalAmount = couponResult.finalAmount + deliveryCharge;
@@ -872,7 +872,7 @@ const getCoupon = async(req, res) => {
 const addCoupon = async (req, res) => {
     try {
         const { code, promoterAmount, minOrderValue, maxUses, startDate, endDate, isActive } = req.body;
-        console.log(Number(promoterAmount))
+        
         if (!code) {
             return res.json({ success: false, message: "Code is required" });
         }
