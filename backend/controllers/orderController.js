@@ -35,9 +35,9 @@ const placeOrder = async (req, res) => {
         // Apply coupon if provided
         let finalAmount = amount;
         let couponDetails = null;
-        
         if (couponCode) {
             const couponResult = await applyCoupon(couponCode, originalAmount, amount);
+            console.log("applyCoupon result:", couponResult);
             if (couponResult.success) {
                 couponDetails = couponResult.couponDetails;
                 finalAmount = couponResult.finalAmount + deliveryCharge;
@@ -47,7 +47,7 @@ const placeOrder = async (req, res) => {
                 
                 await couponModel.findOneAndUpdate(
                     { code: couponCode.toUpperCase() },
-                    { $inc: { usedCount: 1, promoterAmount: promoterDelta + (originalAmount - amount) * 2} } // use a clear field name
+                    { $inc: { usedCount: 1, promoterAmount: promoterDelta + couponResult.discount * 2} } // use a clear field name
                 );
             } else {
                 return res.json({ success: false, message: couponResult.message });
