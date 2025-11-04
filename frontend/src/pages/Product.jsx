@@ -155,7 +155,7 @@ const Product = () => {
                       </div>
 
                       {/* Promoter Discount - Compact card */}
-                      {/* <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="text-sm font-medium text-gray-900 dark:text-white">Refer & Earn</div>
@@ -165,10 +165,10 @@ const Product = () => {
                             {promoterDiscount}%
                           </div>
                         </div>
-                      </div> */}
+                      </div>
 
                       {/* Referral Discount - Compact card */}
-                      {/* <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="p-2.5 bg-green-50 dark:bg-green-900/20 rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="text-sm font-medium text-gray-900 dark:text-white">If code applied</div>
@@ -178,7 +178,7 @@ const Product = () => {
                             {50}%
                           </div>
                         </div>
-                      </div> */}
+                      </div>
                 
                     </div>
                   </div>

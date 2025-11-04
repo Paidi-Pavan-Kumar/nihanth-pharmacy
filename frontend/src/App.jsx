@@ -22,6 +22,7 @@ import Verify from './pages/Verify'
 import Policy from './pages/Policy'
 import UploadPrescription from './pages/UploadPrescription'
 import ConsultDoctor from './pages/ConsultDoctor'
+import Wallet from './pages/Wallet'
 
 
 const App = () => {
@@ -71,6 +72,7 @@ const App = () => {
             <Route path = '/policy' element={<Policy />} />
             <Route path = '/blogs' element={<Blogs />} />
             <Route path = '/blog/:id' element={<BlogDetail />} />
+            <Route path = '/wallet' element={<Wallet />} />
           </Routes>
         </div>
       </div>

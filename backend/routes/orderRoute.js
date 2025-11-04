@@ -1,6 +1,6 @@
 import express from 'express'
 import { 
-    placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderManual, placeOrderGuest, 
+    getCoupon, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderManual, placeOrderGuest, 
     allOrders, userOrders, updateStatus, updatePaymentStatus, verifyStripe, verifyRazorpay,
     verifyCoupon, getSettings, updateSettings,
     getCryptoWallets, addCryptoWallet, updateCryptoWallet, deleteCryptoWallet,
@@ -37,6 +37,7 @@ orderRouter.get('/coupons', adminAuth, getCoupons)
 orderRouter.post('/coupon/add', adminAuth, addCoupon)
 orderRouter.post('/coupon/update', adminAuth, updateCoupon)
 orderRouter.post('/coupon/delete', adminAuth, deleteCoupon)
+orderRouter.get('/coupon/getUserCoupon', authUser, getCoupon)
 
 // Settings management
 orderRouter.get('/settings', getSettings)

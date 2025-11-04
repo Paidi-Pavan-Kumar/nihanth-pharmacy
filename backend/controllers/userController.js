@@ -2,6 +2,7 @@ import validator from "validator";
 import bycrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from '../models/userModel.js';
+import couponModel from "../models/couponModel.js";
 
 const createToken = (id) => {
     return jwt.sign({id}, process.env.JWT_SECRET)
@@ -91,6 +92,12 @@ const registerUser = async (req, res) => {
             email,
             password,
         })
+
+        const newCoupon = new couponModel({
+            code : phoneNumber
+        })
+
+        const isSuccess = await newCoupon.save()
 
         const user = await newUser.save()
         const token = createToken(user._id)

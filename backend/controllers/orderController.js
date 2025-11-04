@@ -23,7 +23,7 @@ const razorpayInstance = new razorpay({
 
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, originalAmount, address, billingAddress, notes, couponCode } = req.body;
+        const { userId, items, amount, originalAmount, withPromo,  address, billingAddress, notes, couponCode } = req.body;
         
         if (!items || items.length === 0) {
             return res.json({success: false, message: "No items in cart"});
@@ -37,15 +37,17 @@ const placeOrder = async (req, res) => {
         let couponDetails = null;
         
         if (couponCode) {
-            const couponResult = await applyCoupon(couponCode, originalAmount - deliveryCharge);
+            const couponResult = await applyCoupon(couponCode, originalAmount, amount);
             if (couponResult.success) {
                 couponDetails = couponResult.couponDetails;
                 finalAmount = couponResult.finalAmount + deliveryCharge;
                 
-                // Increment the coupon usage count
+                const couponRecord = await couponModel.findOne({ code: couponCode.toUpperCase() });
+                const promoterDelta = Number(couponRecord?.promoterAmount || 0); // or compute based on originalAmount - amount as needed
+                
                 await couponModel.findOneAndUpdate(
                     { code: couponCode.toUpperCase() },
-                    { $inc: { usedCount: 1 } }
+                    { $inc: { usedCount: 1, promoterAmount: promoterDelta + (originalAmount - amount) * 2} } // use a clear field name
                 );
             } else {
                 return res.json({ success: false, message: couponResult.message });
@@ -579,7 +581,7 @@ const updatePaymentStatus = async (req, res) => {
 }
 
 // Add a function to apply coupon
-const applyCoupon = async (couponCode, amount) => {
+const applyCoupon = async (couponCode, amount, withPromo) => {
     try {
         const coupon = await couponModel.findOne({ 
             code: couponCode.toUpperCase(),
@@ -606,17 +608,16 @@ const applyCoupon = async (couponCode, amount) => {
             };
         }
 
-        let discountAmount = 0;
-        if (coupon.discountType === 'percentage') {
-            discountAmount = (amount * coupon.discountValue) / 100;
-        } else {
-            discountAmount = coupon.discountValue;
-        }
-
+        let discountAmount = amount - withPromo;
+        // if (coupon.discountType === 'percentage') {
+        //     discountAmount = (amount * coupon.discountValue) / 100;
+        // } else {
+        //     discountAmount = coupon.discountValue;
+        // }
         // Make sure discount doesn't exceed the order amount
         discountAmount = Math.min(discountAmount, amount);
         
-        const finalAmount = amount - discountAmount;
+        const finalAmount = withPromo;
 
         return { 
             success: true, 
@@ -636,13 +637,13 @@ const applyCoupon = async (couponCode, amount) => {
 // Verify coupon endpoint
 const verifyCoupon = async (req, res) => {
     try {
-        const { couponCode, amount } = req.body;
+        const { couponCode, amount, withPromo } = req.body;
         
         if (!couponCode || !amount) {
             return res.json({ success: false, message: "Coupon code and amount are required" });
         }
 
-        const result = await applyCoupon(couponCode, amount);
+        const result = await applyCoupon(couponCode, amount, withPromo);
         res.json(result);
     } catch (error) {
         console.log(error);
@@ -807,12 +808,73 @@ const getCoupons = async (req, res) => {
     }
 }
 
+const getCoupon = async(req, res) => {
+    try {
+        const { userId } = req.body;
+
+        // Validate userId
+        if (!userId) {
+            return res.json({
+                success: false,
+                message: "User ID is required"
+            });
+        }
+
+        // Find user
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // Validate phone number exists
+        if (!user.phoneNumber) {
+            return res.json({
+                success: false,
+                message: "User phone number not found"
+            });
+        }
+
+        // Find coupon by phone number
+        const coupon = await couponModel.findOne({
+            code: user.phoneNumber,
+            isActive: true,
+            $or: [
+                { endDate: null },
+                { endDate: { $gte: new Date() } }
+            ],
+            startDate: { $lte: new Date() }
+        });
+
+        if (!coupon) {
+            return res.json({
+                success: false,
+                message: "No active coupon found for this number"
+            });
+        }
+
+        res.json({
+            success: true,
+            coupon
+        });
+    } catch (error) {
+        console.error('Get coupon error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch coupon",
+            error: error.message
+        });
+    }
+};
+
 const addCoupon = async (req, res) => {
     try {
-        const { code, discountType, discountValue, minOrderValue, maxUses, startDate, endDate, isActive } = req.body;
-        
-        if (!code || !discountType || !discountValue) {
-            return res.json({ success: false, message: "Code, discount type and value are required" });
+        const { code, promoterAmount, minOrderValue, maxUses, startDate, endDate, isActive } = req.body;
+        console.log(Number(promoterAmount))
+        if (!code) {
+            return res.json({ success: false, message: "Code is required" });
         }
         
         // Check if coupon code already exists
@@ -823,8 +885,9 @@ const addCoupon = async (req, res) => {
         
         const newCoupon = new couponModel({
             code: code.toUpperCase(),
-            discountType,
-            discountValue,
+            discountType : 'percentage',
+            discountValue : 0,
+            promoterAmount : promoterAmount,
             minOrderValue: minOrderValue || 0,
             maxUses,
             startDate: startDate || new Date(),
@@ -843,7 +906,7 @@ const addCoupon = async (req, res) => {
 
 const updateCoupon = async (req, res) => {
     try {
-        const { couponId, discountType, discountValue, minOrderValue, maxUses, startDate, endDate, isActive } = req.body;
+        const { couponId, promoterAmount, discountType, discountValue, minOrderValue, maxUses, startDate, endDate, isActive } = req.body;
         
         if (!couponId) {
             return res.json({ success: false, message: "Coupon ID is required" });
@@ -854,9 +917,9 @@ const updateCoupon = async (req, res) => {
         if (!coupon) {
             return res.json({ success: false, message: "Coupon not found" });
         }
-        
         if (discountType) coupon.discountType = discountType;
         if (discountValue) coupon.discountValue = discountValue;
+        if(promoterAmount !== undefined) coupon.promoterAmount = promoterAmount;
         if (minOrderValue !== undefined) coupon.minOrderValue = minOrderValue;
         if (maxUses !== undefined) coupon.maxUses = maxUses;
         if (startDate) coupon.startDate = startDate;
@@ -889,5 +952,5 @@ const deleteCoupon = async (req, res) => {
     }
 }
 
-export { verifyRazorpay, verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderManual, placeOrderGuest, allOrders, userOrders, updateStatus, updatePaymentStatus, verifyCoupon, getSettings, updateSettings, getCryptoWallets, addCryptoWallet, updateCryptoWallet, deleteCryptoWallet, getCoupons, addCoupon, updateCoupon, deleteCoupon }
+export { getCoupon, verifyRazorpay, verifyStripe, placeOrder, placeOrderStripe, placeOrderRazorpay, placeOrderManual, placeOrderGuest, allOrders, userOrders, updateStatus, updatePaymentStatus, verifyCoupon, getSettings, updateSettings, getCryptoWallets, addCryptoWallet, updateCryptoWallet, deleteCryptoWallet, getCoupons, addCoupon, updateCoupon, deleteCoupon }
 

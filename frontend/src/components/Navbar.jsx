@@ -47,6 +47,9 @@ const NavBar = () => {
                 <NavLink to='/contact' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
                     <p>CONTACT</p>
                 </NavLink>
+                <NavLink to='/wallet' className='flex flex-col items-center gap-1 hover:text-primary dark:hover:text-[#02ADEE]'>
+                    <p>REFER & EARN</p>
+                </NavLink>
             </ul>
 
             {/* Right side - ensure icons remain visible on mobile */}
@@ -114,6 +117,7 @@ const NavBar = () => {
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/orders'>ORDER</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/consult-doctor'>CONSULT DOCTOR</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/upload-prescription'>UPLOAD PRESCRIPTION</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/wallet'>REFER & EARN</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/contact'>CONTACT</NavLink>
                 </div>
             </div>

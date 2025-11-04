@@ -59,7 +59,7 @@ const Sidebar = () => {
           to="/coupons"
         >
           <Tag className="w-5 h-5" />
-          <p className="hidden md:block">Coupons</p>
+          <p className="hidden md:block">Wallet</p>
         </NavLink>
 
         <NavLink

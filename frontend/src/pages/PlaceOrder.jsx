@@ -26,11 +26,23 @@ const PlaceOrder = () => {
   } = useContext(ShopContext);
   
   // helper to get numeric subtotal from context (supports both old number and new {final,...} shape)
+  // const getNumericSubtotal = () => {
+  //   const totals = getCartAmount();
+  //   if (typeof totals === "object" && totals !== null) {
+  //     // prefer final, fallback to mrp or numeric coercion
+  //     return Number(totals.final ?? totals.total ?? 0);
+  //   }
+  //   return Number(totals || 0);
+  // };
+
   const getNumericSubtotal = () => {
     const totals = getCartAmount();
     if (typeof totals === "object" && totals !== null) {
       // prefer final, fallback to mrp or numeric coercion
-      return Number(totals.final ?? totals.total ?? 0);
+      return {
+        withoutPromo : Number(totals.final ?? totals.total ?? 0),
+        withPromo : Number(totals.finalPriceAfterPromoterDiscount ?? 0)
+      };
     }
     return Number(totals || 0);
   };
@@ -197,14 +209,15 @@ const PlaceOrder = () => {
       setIsApplyingCoupon(true);
       setCouponError("");
       setCouponSuccess("");
-
-      const amountToVerify = getNumericSubtotal();
-
+      const {withPromo, withoutPromo} = getNumericSubtotal();
+      // const amountToVerify = getNumericSubtotal();
+      const amountToVerify = withoutPromo;
       const response = await axios.post(
         backendUrl + "/api/order/verify-coupon",
         {
           couponCode,
           amount: amountToVerify, // ensure numeric
+          withPromo : withPromo
         }
       );
 
@@ -284,7 +297,8 @@ const PlaceOrder = () => {
           };
 
       // use numeric subtotal and ensure amounts are numbers
-      const subtotalNumeric = getNumericSubtotal();
+      const {withoutPromo, withPromo} = getNumericSubtotal();
+      const subtotalNumeric = Number(withoutPromo)
       const deliveryFeeNumeric = Number(delivery_fee || 0);
       const couponNumeric = Number(couponDiscount || 0);
 
@@ -629,11 +643,11 @@ const PlaceOrder = () => {
           </div>
 
           <div className="mt-4">
-            {/* <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+            <label className="block text-sm font-medium mb-2 dark:text-gray-300">
               Apply Coupon
-            </label> */}
+            </label>
             <div className="flex space-x-2">
-              {/* <input
+              <input
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
@@ -647,7 +661,7 @@ const PlaceOrder = () => {
                 className="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded"
               >
                 {isApplyingCoupon ? "Applying..." : "Apply"}
-              </button> */}
+              </button>
             </div>
             {couponError && <p className="text-red-500 text-sm mt-1">{couponError}</p>}
             {couponSuccess && <p className="text-green-500 text-sm mt-1">{couponSuccess}</p>}

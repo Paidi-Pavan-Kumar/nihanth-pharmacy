@@ -302,11 +302,13 @@ const ShopContextProvider = (props) => {
             const mrpPrice = product.price * quantity;
             const discountAmount = (mrpPrice * product.customerDiscount) / 100;
             const finalPrice = mrpPrice - discountAmount;
-
+            const promoterDiscountAmount = (finalPrice * (product.promoterDiscount / 2)) / 100;
+            const finalPriceAfterPromoterDiscount = finalPrice - promoterDiscountAmount;
             return {
                 mrp: Math.round(mrpPrice * 100) / 100,
                 discount: Math.round(discountAmount * 100) / 100,
-                final: Math.round(finalPrice * 100) / 100
+                final: Math.round(finalPrice * 100) / 100,
+                finalPriceAfterPromoterDiscount: Math.round(finalPriceAfterPromoterDiscount * 100) / 100
             };
         }
     };
@@ -315,7 +317,8 @@ const ShopContextProvider = (props) => {
         let totals = {
             mrp: 0,
             discount: 0,
-            final: 0
+            final: 0,
+            finalPriceAfterPromoterDiscount: 0
         };
 
         for (const itemId in cartItems) {
@@ -323,13 +326,15 @@ const ShopContextProvider = (props) => {
             totals.mrp += itemTotals.mrp;
             totals.discount += itemTotals.discount;
             totals.final += itemTotals.final;
+            totals.finalPriceAfterPromoterDiscount += itemTotals.finalPriceAfterPromoterDiscount;
         }
 
         // Round all values to 2 decimal places
         return {
             mrp: Math.round(totals.mrp * 100) / 100,
             discount: Math.round(totals.discount * 100) / 100,
-            final: Math.round(totals.final * 100) / 100
+            final: Math.round(totals.final * 100) / 100,
+            finalPriceAfterPromoterDiscount: Math.round(totals.finalPriceAfterPromoterDiscount * 100) / 100
         };
     };
 
@@ -361,7 +366,8 @@ const ShopContextProvider = (props) => {
                     discount: priceDetails.discount,
                     final: priceDetails.final,
                     unitMrp: product.price,
-                    unitFinal: product.price * (1 - product.customerDiscount / 100)
+                    unitFinal: product.price * (1 - product.customerDiscount / 100),
+                    unitFinalPriceAfterPromoterDiscount: priceDetails.finalPriceAfterPromoterDiscount
                 }
             });
         }

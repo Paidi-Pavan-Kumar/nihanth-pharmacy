@@ -200,7 +200,7 @@ const Orders = () => {
                           <h4 className="text-sm font-medium text-gray-800 dark:text-white mb-2">Coupon Applied</h4>
                           <div className="text-sm text-gray-600 dark:text-gray-300">
                             <p>Code: <span className="font-medium">{order.coupon.code}</span></p>
-                            <p>Discount: {currency}{order.coupon.discount}</p>
+                            <p>Discount: {currency}{Number(order.coupon.discount).toFixed(2)}</p>
                             {order.originalAmount && (
                               <p>Original Amount: {currency}{Number(order.originalAmount).toFixed(2)}</p>
                             )}

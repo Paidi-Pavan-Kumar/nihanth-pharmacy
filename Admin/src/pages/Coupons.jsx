@@ -12,8 +12,7 @@ const Coupons = ({ token }) => {
   const [formMode, setFormMode] = useState("add"); // "add" or "edit"
   const [formData, setFormData] = useState({
     code: "",
-    discountType: "percentage",
-    discountValue: "",
+    promoterAmount: "0", // Changed from discountType/Value to just promoterAmount
     minOrderValue: "0",
     maxUses: "",
     startDate: new Date().toISOString().split("T")[0],
@@ -52,8 +51,7 @@ const Coupons = ({ token }) => {
   const resetForm = () => {
     setFormData({
       code: "",
-      discountType: "percentage",
-      discountValue: "",
+      promoterAmount: "0",
       minOrderValue: "0",
       maxUses: "",
       startDate: new Date().toISOString().split("T")[0],
@@ -72,8 +70,7 @@ const Coupons = ({ token }) => {
   const handleEditClick = (coupon) => {
     setFormData({
       code: coupon.code,
-      discountType: coupon.discountType,
-      discountValue: coupon.discountValue.toString(),
+      promoterAmount: coupon.promoterAmount.toString(),
       minOrderValue: coupon.minOrderValue.toString(),
       maxUses: coupon.maxUses ? coupon.maxUses.toString() : "",
       startDate: coupon.startDate ? new Date(coupon.startDate).toISOString().split("T")[0] : "",
@@ -99,8 +96,8 @@ const Coupons = ({ token }) => {
       return;
     }
     
-    if (!formData.discountValue || isNaN(formData.discountValue) || parseFloat(formData.discountValue) <= 0) {
-      toast.error("Please enter a valid discount value");
+    if (!formData.promoterAmount || isNaN(formData.promoterAmount) || parseFloat(formData.promoterAmount) < 0) {
+      toast.error("Please enter a valid promoter amount");
       return;
     }
     
@@ -109,7 +106,7 @@ const Coupons = ({ token }) => {
       
       const payload = {
         ...formData,
-        discountValue: parseFloat(formData.discountValue),
+        promoterAmount: parseFloat(formData.promoterAmount),
         minOrderValue: parseFloat(formData.minOrderValue) || 0,
         maxUses: formData.maxUses ? parseInt(formData.maxUses) : null
       };
@@ -222,31 +219,16 @@ const Coupons = ({ token }) => {
               
               <div className="col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Discount Type*
-                </label>
-                <select
-                  value={formData.discountType}
-                  onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                >
-                  <option value="percentage">Percentage (%)</option>
-                  <option value="fixed">Fixed Amount</option>
-                </select>
-              </div>
-              
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {formData.discountType === "percentage" ? "Discount Percentage*" : "Discount Amount*"}
+                  promoter Amount*
                 </label>
                 <input
                   type="number"
-                  value={formData.discountValue}
-                  onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                  value={formData.promoterAmount}
+                  onChange={(e) => setFormData({ ...formData, promoterAmount: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-md"
-                  placeholder={formData.discountType === "percentage" ? "e.g., 10" : "e.g., 5.99"}
+                  placeholder="e.g., 10"
                   min="0"
-                  step={formData.discountType === "percentage" ? "1" : "0.01"}
+                  step = "0.01"
                   required
                 />
               </div>
@@ -363,7 +345,7 @@ const Coupons = ({ token }) => {
                   Code
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Discount
+                  promoter Amount
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Min. Order
@@ -390,9 +372,7 @@ const Coupons = ({ token }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {coupon.discountType === "percentage"
-                        ? `${coupon.discountValue}%`
-                        : `$${coupon.discountValue.toFixed(2)}`}
+                      ₹{coupon.promoterAmount.toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -448,4 +428,4 @@ Coupons.propTypes = {
   token: PropTypes.string
 };
 
-export default Coupons; 
+export default Coupons;
