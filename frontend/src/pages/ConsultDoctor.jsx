@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Phone } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const ConsultDoctor = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // prevent full page refresh
+    if (!email.trim()) {
+      toast.error('Please enter your email');
+      return;
+    }
+    setSubmitting(true);
+    // optionally send email to backend here
+    toast.success('Thanks — we will notify you when we launch');
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen pt-16 sm:pt-20 pb-6 sm:pb-10 px-3 sm:px-4 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
@@ -69,17 +87,20 @@ const ConsultDoctor = () => {
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Get Notified When We Launch
                 </h3>
-                <form className="flex flex-col sm:flex-row max-w-md mx-auto gap-2">
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto gap-2">
                   <input
                     type="email"
                     placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
-                  <button 
+                  <button
                     type="submit"
-                    className="px-6 py-2 bg-[#02ADEE] text-white rounded-lg hover:bg-[#0297cf] transition-colors text-sm sm:text-base font-medium"
+                    disabled={submitting}
+                    className="px-6 py-2 bg-[#02ADEE] text-white rounded-lg hover:bg-[#0297cf] transition-colors text-sm sm:text-base font-medium disabled:opacity-60"
                   >
-                    Notify Me
+                    {submitting ? 'Sending...' : 'Notify Me'}
                   </button>
                 </form>
               </div>

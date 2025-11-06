@@ -38,20 +38,67 @@ const placeOrder = async (req, res) => {
         if (couponCode) {
             const couponResult = await applyCoupon(couponCode, originalAmount, amount);
         
-            if (couponResult.success) {
-                couponDetails = couponResult.couponDetails;
-                finalAmount = couponResult.finalAmount + deliveryCharge;
+            // if (couponResult.success) {
+            //     couponDetails = couponResult.couponDetails;
+            //     finalAmount = couponResult.finalAmount + deliveryCharge;
                 
-                const couponRecord = await couponModel.findOne({ code: couponCode.toUpperCase() });
-                const promoterDelta = Number(couponRecord?.promoterAmount || 0); // or compute based on originalAmount - amount as needed
-                
-                await couponModel.findOneAndUpdate(
-                    { code: couponCode.toUpperCase() },
-                    { $inc: { usedCount: 1, promoterAmount: promoterDelta + couponResult.discount * 2} } // use a clear field name
-                );
-            } else {
-                return res.json({ success: false, message: couponResult.message });
-            }
+            //     const couponRecord = await couponModel.findOne({ code: couponCode.toUpperCase() });
+            //     const promoterDelta = Number(couponRecord.promoterAmount || 0); // or compute based on originalAmount - amount as needed
+            //     console.log("number is " +couponRecord.promoterAmount);
+            //     await couponModel.findOneAndUpdate(
+            //         { code: couponCode.toUpperCase() },
+            //         { $inc: { usedCount: 1, promoterAmount: promoterDelta + Number(couponResult.discount) * 2}}  // use a clear field name
+            //     );
+            // } else {
+            //     return res.json({ success: false, message: couponResult.message });
+            // }
+
+            // Inside placeOrder function, replace the coupon update logic with this:
+if (couponResult.success) {
+    couponDetails = couponResult.couponDetails;
+    finalAmount = couponResult.finalAmount + deliveryCharge;
+    
+    try {
+        // Get current coupon data
+        const couponRecord = await couponModel.findOne({ code: couponCode.toUpperCase() });
+        if (!couponRecord) {
+            return res.json({ success: false, message: "Coupon not found" });
+        }
+
+        // Ensure current promoterAmount is a number
+        const currentPromoterAmount = Number(couponRecord.promoterAmount || 0);
+        
+        // Calculate new promoter amount (double the discount)
+        const promoterDelta = Number(couponResult.couponDetails.discount || 0) * 2;
+
+        // Validate the numbers before update
+        if (!isNaN(promoterDelta) && isFinite(promoterDelta)) {
+            await couponModel.findOneAndUpdate(
+                { code: couponCode.toUpperCase() },
+                { 
+                    $inc: { 
+                        usedCount: 1
+                    },
+                    $set: {
+                        promoterAmount: currentPromoterAmount + promoterDelta
+                    }
+                }
+            );
+        } else {
+            // Just increment usage count if promoter calculation fails
+            await couponModel.findOneAndUpdate(
+                { code: couponCode.toUpperCase() },
+                { $inc: { usedCount: 1 } }
+            );
+            console.warn(`Invalid promoter amount calculation: ${promoterDelta}`);
+        }
+    } catch (error) {
+        console.error('Error updating coupon:', error);
+        // Continue with order placement even if coupon update fails
+    }
+} else {
+    return res.json({ success: false, message: couponResult.message });
+}
         }
 
         const orderData = {

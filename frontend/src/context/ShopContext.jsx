@@ -12,10 +12,16 @@ const ShopContextProvider = (props) => {
     const delivery_fee = 0;
     const backendUrl = import.meta.env.VITE_BACKEND_URL
     const [search, setSearch] = useState('');
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const [showSearch, setShowSearch]= useState(true);
     const [cartItems, setCartItem] = useState({});
     const [featuredProducts, setFeaturedProducts] = useState([]);
     const [products, setProducts] = useState([]);
+    // cache products by id so cart calculations don't depend on current products list
+    const [allProductsMap, setAllProductsMap] = useState({});
     const [loading, setLoading] = useState(false);
     const [productsPagination, setProductsPagination] = useState({
         total: 0,
@@ -30,9 +36,28 @@ const ShopContextProvider = (props) => {
         sortBy: 'date',
         sortOrder: 'desc'
     });
-    const [token, setToken] = useState('');
+    // initialize token synchronously from localStorage to avoid auth flash
+    const [token, setToken] = useState(() => localStorage.getItem('token') || '');
     const navigate = useNavigate();
-
+    const fetchUserDetails = async (authToken) => {
+        try {
+            const response = await axios.get(`${backendUrl}/api/user/profile`, {
+                headers: { token: authToken }
+            });
+            
+            if (response.data.success) {
+                setUser(response.data.user);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        }
+    };
+    useEffect(() => {
+        if (token) {
+            fetchUserDetails(token);
+        }
+    }, [token]);
     // Function to update filters and fetch products
     const updateFilters = (newFilters) => {
         // Create new filters by merging existing filters with new ones
@@ -67,23 +92,29 @@ const ShopContextProvider = (props) => {
             });
             
             if (response.data.success) {
-                setProducts(response.data.products);
-                setProductsPagination({
-                    total: response.data.pagination.total,
-                    pages: response.data.pagination.pages,
-                    currentPage: response.data.pagination.currentPage,
-                    limit: response.data.pagination.limit
+                const newProducts = response.data.products || [];
+                setProducts(newProducts);
+                setAllProductsMap(prev => {
+                    const updated = { ...prev };
+                    newProducts.forEach(p => { if (p && p._id) updated[p._id] = p; });
+                    return updated;
                 });
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+                 setProductsPagination({
+                     total: response.data.pagination.total,
+                     pages: response.data.pagination.pages,
+                     currentPage: response.data.pagination.currentPage,
+                     limit: response.data.pagination.limit
+                 });
+             } else {
+                 toast.error(response.data.message);
+             }
+         } catch (error) {
+             console.error("Error fetching products:", error);
+             toast.error(error.message);
+         } finally {
+             setLoading(false);
+         }
+     };
 
     // Function to set page for pagination
     const setPage = (page) => {
@@ -114,23 +145,29 @@ const ShopContextProvider = (props) => {
             });
             
             if (response.data.success) {
-                setProducts(response.data.products);
-                setProductsPagination({
-                    total: response.data.pagination.total,
-                    pages: response.data.pagination.pages,
-                    currentPage: response.data.pagination.currentPage,
-                    limit: response.data.pagination.limit
+                const newProducts = response.data.products || [];
+                setProducts(newProducts);
+                setAllProductsMap(prev => {
+                    const updated = { ...prev };
+                    newProducts.forEach(p => { if (p && p._id) updated[p._id] = p; });
+                    return updated;
                 });
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+                 setProductsPagination({
+                     total: response.data.pagination.total,
+                     pages: response.data.pagination.pages,
+                     currentPage: response.data.pagination.currentPage,
+                     limit: response.data.pagination.limit
+                 });
+             } else {
+                 toast.error(response.data.message);
+             }
+         } catch (error) {
+             console.error("Error fetching products:", error);
+             toast.error(error.message);
+         } finally {
+             setLoading(false);
+         }
+     };
 
     const addToCart = async (itemId, itemData) => {
         // Convert old format to new format if needed
@@ -151,10 +188,19 @@ const ShopContextProvider = (props) => {
             cartData.quantity = 1;
         }
 
-        // Find the product to check for minimum order quantity
-        const product = products.find(p => p._id === itemId);
+        // Find the product to check for minimum order quantity (prefer current products, fallback to cache)
+        let product = products.find(p => p._id === itemId) || allProductsMap[itemId];
+        if (!product) {
+            // try fetching single product
+            const fetched = await getProductById(itemId);
+            if (fetched) {
+                product = fetched;
+                setAllProductsMap(prev => ({ ...prev, [fetched._id]: fetched }));
+            }
+        }
         if (!product) {
             console.error('Product not found');
+            toast.error('Product details not available. Try again.');
             return;
         }
 
@@ -169,7 +215,19 @@ const ShopContextProvider = (props) => {
 
         try {
             let newCartItems = structuredClone(cartItems);
-            newCartItems[itemId] = cartData;
+            // store a small product snapshot with cart item so UI and totals survive product list changes
+            newCartItems[itemId] = {
+                ...cartData,
+                _productSnapshot: {
+                    _id: product._id,
+                    name: product.name,
+                    image: Array.isArray(product.image) ? product.image : (product.image ? [product.image] : []),
+                    price: product.price,
+                    customerDiscount: product.customerDiscount || 0,
+                    promoterDiscount: product.promoterDiscount || 0,
+                    minOrderQuantity: product.minOrderQuantity || 1
+                }
+            };
             setCartItem(newCartItems);
             toast.success('Item Added to Cart');
 
@@ -245,10 +303,18 @@ const ShopContextProvider = (props) => {
                 return;
             }
 
-            // Find the product to check for minimum order quantity
-            const product = products.find(p => p._id === itemId);
+            // Find the product to check for minimum order quantity (prefer products, then cache, then snapshot)
+            let product = products.find(p => p._id === itemId) || allProductsMap[itemId] || cartItems[itemId]?._productSnapshot;
+            if (!product) {
+                const fetched = await getProductById(itemId);
+                if (fetched) {
+                    product = fetched;
+                    setAllProductsMap(prev => ({ ...prev, [fetched._id]: fetched }));
+                }
+            }
             if (!product) {
                 console.error('Product not found');
+                toast.error('Product details not available. Try again.');
                 return;
             }
 
@@ -262,7 +328,18 @@ const ShopContextProvider = (props) => {
             }
 
             let newCartItems = structuredClone(cartItems);
-            newCartItems[itemId] = cartData;
+            newCartItems[itemId] = {
+                ...cartData,
+                _productSnapshot: cartItems[itemId]?._productSnapshot || {
+                    _id: product._id,
+                    name: product.name,
+                    image: Array.isArray(product.image) ? product.image : (product.image ? [product.image] : []),
+                    price: product.price,
+                    customerDiscount: product.customerDiscount || 0,
+                    promoterDiscount: product.promoterDiscount || 0,
+                    minOrderQuantity: product.minOrderQuantity || 1
+                }
+            };
             setCartItem(newCartItems);
 
             if (token) {
@@ -284,8 +361,8 @@ const ShopContextProvider = (props) => {
         if (!item) return { mrp: 0, discount: 0, final: 0 };
 
         const quantity = typeof item === 'object' ? item.quantity : item;
-        const product = products.find((p) => p._id === itemId);
-        
+        // prefer current products, then cache, then snapshot stored on the item
+        const product = products.find((p) => p._id === itemId) || allProductsMap[itemId] || item._productSnapshot;
         if (!product) return { mrp: 0, discount: 0, final: 0 };
 
         if (typeof item === 'object' && item.isPackage && item.selectedPrice) {
@@ -344,7 +421,7 @@ const ShopContextProvider = (props) => {
             const item = cartItems[itemId];
             if (!item) continue;
 
-            const product = products.find(p => p._id === itemId);
+            const product = products.find(p => p._id === itemId) || allProductsMap[itemId] || item._productSnapshot;
             if (!product) continue;
 
             const quantity = typeof item === 'object' ? item.quantity : item;
@@ -355,7 +432,7 @@ const ShopContextProvider = (props) => {
             items.push({
                 _id: itemId,
                 name: product.name,
-                image: product.image[0],
+                image: Array.isArray(product.image) ? product.image[0] : (product.image || null),
                 quantity: quantity,
                 customerDiscount: product.customerDiscount,
                 promoterDiscount: product.promoterDiscount,
@@ -365,7 +442,7 @@ const ShopContextProvider = (props) => {
                     discount: priceDetails.discount,
                     final: priceDetails.final,
                     unitMrp: product.price,
-                    unitFinal: product.price * (1 - product.customerDiscount / 100),
+                    unitFinal: Number(product.price || 0) * (1 - Number(product.customerDiscount || 0) / 100),
                     unitFinalPriceAfterPromoterDiscount: priceDetails.finalPriceAfterPromoterDiscount
                 }
             });
@@ -406,21 +483,28 @@ const ShopContextProvider = (props) => {
             
             if (response.data.success) {
                 setProducts(response.data.products);
-                setProductsPagination({
-                    total: response.data.pagination.total,
-                    pages: response.data.pagination.pages,
-                    currentPage: response.data.pagination.currentPage,
-                    limit: response.data.pagination.limit
+                // merge fetched products into the product map (fix typo and avoid setting undefined)
+                const fetched = response.data.products || [];
+                setAllProductsMap(prev => {
+                    const updated = { ...prev };
+                    fetched.forEach(p => { if (p && p._id) updated[p._id] = p; });
+                    return updated;
                 });
-            } else {
-                toast.error(response.data.message);
-            }
-        } catch (error) {
-            console.log(error);
-            toast.error(error.message);
-        } finally {
-            setLoading(false);
-        }
+                 setProductsPagination({
+                     total: response.data.pagination.total,
+                     pages: response.data.pagination.pages,
+                     currentPage: response.data.pagination.currentPage,
+                     limit: response.data.pagination.limit
+                 });
+             } else {
+                 toast.error(response.data.message);
+             }
+         } catch (error) {
+             console.log(error);
+             toast.error(error.message);
+         } finally {
+             setLoading(false);
+         }
     };
 
     // Get a specific product by ID
@@ -429,7 +513,9 @@ const ShopContextProvider = (props) => {
             setLoading(true);
             const response = await axios.get(`${backendUrl}/api/product/${productId}`);
             if (response.data.success) {
-                return response.data.product;
+                const prod = response.data.product;
+                setAllProductsMap(prev => ({ ...prev, [prod._id]: prod }));
+                return prod;
             } else {
                 toast.error(response.data.message);
                 return null;
@@ -510,8 +596,21 @@ const ShopContextProvider = (props) => {
     }
 
     useEffect(() => {
-        // On initial load, fetch featured products
+        // On initial load, clear in-memory caches and fetch fresh data
+        setProducts([]);                // clear current list
+        setAllProductsMap({});          // clear product cache
+        setCartItem({});                // clear cart state (will be replaced by server cart if token)
+
+        // Fetch featured/products fresh
         getProductsData(true);
+
+        // If there's a token, immediately fetch server cart
+        const localToken = localStorage.getItem('token') || token;
+        if (localToken) {
+            setUser(localToken)
+            setToken(localToken);
+            getUserCart(localToken);
+        }
     }, []);
 
     // Listen for changes in filters and pagination to fetch products
@@ -542,7 +641,7 @@ const ShopContextProvider = (props) => {
         cartItems, addToCart, setCartItem,
         getCartCount, updateQuantity,
         getCartAmount, navigate, backendUrl,
-        setToken, token, getCartItems, getItemTotal,
+        setToken, token, user, setUser, getCartItems, getItemTotal,
         filters, updateFilters, 
         pagination: productsPagination,
         setPage,

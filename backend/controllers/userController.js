@@ -32,7 +32,7 @@ const loginUser = async (req, res) => {
         const isMatch = password === user.password
         if (isMatch) {
             const token = createToken(user._id)
-            res.json({success: true, token})
+            res.json({success: true, token, user})
         } else {
             res.json({
                 success: false, 
@@ -139,4 +139,35 @@ const getPassword = async(req,res)=>{
     }
 }
 
-export { loginUser, registerUser, adminLogin, getPassword}
+const getUserProfile = async (req, res) => {
+    try {
+        const {userId} = req.body
+        const user = await userModel.findById(userId).select('-password');
+        
+        if (!user) {
+            return res.json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                isPromoter: user.isPromoter
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.json({
+            success: false,
+            message: 'Error fetching user profile'
+        });
+    }
+};
+
+export { loginUser, registerUser, adminLogin, getPassword, getUserProfile}

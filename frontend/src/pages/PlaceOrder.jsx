@@ -13,11 +13,17 @@ const PlaceOrder = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sameAsDelivery, setSameAsDelivery] = useState(true);
-
+  const logout = () => {
+        localStorage.removeItem('token');
+        setToken('');
+        setCartItem({});
+        navigate('/login');
+    }
   const {
     navigate,
     backendUrl,
     token,
+    setToken,  // Add this
     setCartItem,
     getCartAmount,
     delivery_fee,
@@ -222,6 +228,13 @@ const PlaceOrder = () => {
       );
 
       if (response.data.success) {
+        if (response.data.couponDetails.discount.toFixed(2) >= amountToVerify) {
+          toast.error("Please login again and don't refresh the page")
+          setCouponError("Invalid coupon amount, Please login again");
+          setCouponDiscount(0);
+          logout();
+          return;
+        }
         setCouponDiscount(response.data.couponDetails.discount);
         setCouponSuccess(
           `Coupon applied! You saved ${currency}${response.data.couponDetails.discount.toFixed(

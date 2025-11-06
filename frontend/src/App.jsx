@@ -23,6 +23,7 @@ import Policy from './pages/Policy'
 import UploadPrescription from './pages/UploadPrescription'
 import ConsultDoctor from './pages/ConsultDoctor'
 import Wallet from './pages/Wallet'
+import Profile from './pages/Profile'
 
 
 const App = () => {
@@ -73,6 +74,7 @@ const App = () => {
             <Route path = '/blogs' element={<Blogs />} />
             <Route path = '/blog/:id' element={<BlogDetail />} />
             <Route path = '/wallet' element={<Wallet />} />
+            <Route path = '/profile' element={<Profile />} />
           </Routes>
         </div>
       </div>

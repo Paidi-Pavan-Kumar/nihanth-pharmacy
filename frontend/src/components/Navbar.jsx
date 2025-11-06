@@ -6,13 +6,15 @@ import ThemeSwitcher from './ThemeSwitcher';
 
 const NavBar = () => {
     const [visible, setVisible] = useState(false);
-    const { setShowSearch, getTypeOfProductsAddedInCart, navigate, token, setToken, setCartItems } = useContext(ShopContext);
+    const { setUser,setShowSearch, getTypeOfProductsAddedInCart, navigate, token, setToken, setCartItem } = useContext(ShopContext);
     
     const logout = () => {
+        setUser(null);
         navigate('/login');
+        localStorage.removeItem('user');
         localStorage.removeItem('token');
         setToken('');
-        setCartItems({});
+        setCartItem({});
     }
 
     return (
@@ -76,6 +78,7 @@ const NavBar = () => {
                             <div className='group-hover:block hidden absolute dropdown-menu right-0 pt-4 z-50'>
                                 <div className='flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded shadow-lg'>
                                     <p onClick={() => navigate('/orders')} className='cursor-pointer hover:text-black dark:hover:text-white'>Orders</p>
+                                    <p onClick={() => navigate('/profile')} className='cursor-pointer hover:text-black dark:hover:text-white'>Profile</p>
                                     <p onClick={logout} className='cursor-pointer hover:text-black dark:hover:text-white'>Logout</p>
                                 </div>
                             </div>}
@@ -114,6 +117,7 @@ const NavBar = () => {
 
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/'>HOME</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/products'>PRODUCTS</NavLink>
+                    <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/profile'>PROFILE</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/orders'>ORDER</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/consult-doctor'>CONSULT DOCTOR</NavLink>
                     <NavLink onClick={() => setVisible(false)} className='py-3 pl-6 border-t border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800' to='/upload-prescription'>UPLOAD PRESCRIPTION</NavLink>

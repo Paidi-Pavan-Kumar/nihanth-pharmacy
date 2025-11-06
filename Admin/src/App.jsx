@@ -14,7 +14,7 @@ import SiteSettings from './pages/SiteSettings'
 import Coupons from './pages/Coupons'
 import CryptoWallets from './pages/CryptoWallets'
 import BlogManagement from './pages/BlogManagement'
-
+import Prescriptions from './pages/Prescriptions'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL
 export const frontendUrl = import.meta.env.VITE_FRONTEND_URL
@@ -47,6 +47,7 @@ const App = () => {
             <Route path='/coupons' element={<Coupons token={token} />} />
             <Route path='/crypto-wallets' element={<CryptoWallets token={token} />} />
             <Route path='/blogs' element={<BlogManagement token={token} />} />
+            <Route path='/prescriptions' element={<Prescriptions token={token} />} />
           </Routes>
         </div>
       </div>

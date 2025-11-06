@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
 const Cart = () => {
-  const {products, currency, cartItems, updateQuantity, navigate, token, getItemTotal} = useContext(ShopContext);
+  const { products, currency, cartItems, updateQuantity, navigate, token, getItemTotal, getCartItems } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
 
   const proceedToPayment = () => {
@@ -21,22 +21,27 @@ const Cart = () => {
     }
   }
 
+  // Build cartData from ShopContext.getCartItems() so cart survives search changes
   useEffect(() => {
-    if (products.length > 0) {
-      const tempData = [];
-      Object.entries(cartItems).forEach(([itemId, itemData]) => {
-        if (itemData && (typeof itemData === 'object' ? itemData.quantity > 0 : itemData > 0)) {
-          tempData.push({
-            _id: itemId,
-            quantity: typeof itemData === 'object' ? itemData.quantity : itemData,
-            selectedPrice: typeof itemData === 'object' ? itemData.selectedPrice : null,
-            isPackage: typeof itemData === 'object' ? itemData.isPackage : false
-          });
-        }
-      });
-      setCartData(tempData);
-    }
-  }, [cartItems, products]);
+    const items = (getCartItems() || []).map(i => ({
+      _id: i._id,
+      quantity: i.quantity,
+      selectedPrice: i.selectedPrice ?? null,
+      isPackage: i.isPackage ?? false,
+      // include product snapshot for rendering
+      product: {
+        _id: i._id,
+        name: i.name,
+        image: i.image,
+        price: i.prices?.unitMrp ?? 0,
+        customerDiscount: i.customerDiscount ?? 0,
+        promoterDiscount: i.promoterDiscount ?? 0,
+        packing: i.packing ?? ''
+      },
+      prices: i.prices ?? {}
+    }));
+    setCartData(items);
+  }, [cartItems, getCartItems]);
 
   const formatPrice = (price) => {
     return Number(price).toFixed(2);
@@ -81,13 +86,13 @@ const Cart = () => {
             {/* Cart Items Section - Modified for landscape layout */}
             <div className='lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm divide-y dark:divide-gray-700'>
               {cartData.map((item, index) => {
-                const productData = products.find(p => p._id === item._id);
+                const productData = item.product;
                 if (!productData) return null;
 
                 const minOrderQuantity = productData.minOrderQuantity || 1;
                 const displayPrice = item.selectedPrice || productData.price;
                 const itemTotals = getItemTotal(item._id);
-                const price = productData.price * (1 - productData.customerDiscount / 100)
+                const price = Number(productData.price || 0) * (1 - Number(productData.customerDiscount || 0) / 100);
                 const qty = item.quantity;
 
                 return (
@@ -95,7 +100,7 @@ const Cart = () => {
                     {/* Line 1: very small image + name */}
                     <div className="flex items-center gap-3">
                       <img
-                        src={productData.image?.[0] || ''}
+                        src={Array.isArray(productData.image) ? (productData.image[0] || '') : (productData.image || '')}
                         alt={productData.name}
                         className="w-6 h-6 sm:w-8 sm:h-8 object-contain rounded"
                       />
