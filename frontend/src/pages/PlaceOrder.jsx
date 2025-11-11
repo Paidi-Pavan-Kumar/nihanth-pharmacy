@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 const PlaceOrder = () => {
   // set default payment method to COD and remove other payment states
-  const [method] = useState("cod");
+  const [paymentOption, setPaymentOption] = useState("Cash")
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -640,6 +640,23 @@ const PlaceOrder = () => {
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 px-3">
               Pay with cash when your order is delivered.
             </p>
+
+            <div className="mt-3 px-3">
+  <label className="block text-sm font-medium mb-2 dark:text-gray-300">
+    Select Payment Option
+  </label>
+  <select
+    value={paymentOption}
+    onChange={(e) => setPaymentOption(e.target.value)}
+    className="w-full border dark:border-gray-600 rounded py-2 px-3 dark:bg-gray-800 dark:text-white"
+  >
+    <option value="cash">Cash</option>
+    <option value="upi">UPI</option>
+    <option value="credit-card">Credit Card</option>
+    <option value="debit-card">Debit Card</option>
+  </select>
+</div>
+
           </div>
 
           <div className="mt-4">

@@ -405,21 +405,21 @@ const placeOrderGuest = async (req, res) => {
             return res.json({success: false, message: "No items in cart"});
         }
 
-        // Validate payment details based on payment type
-        if (!manualPaymentDetails || !manualPaymentDetails.paymentType) {
-            return res.json({success: false, message: "Payment type is required"});
-        }
+        // // Validate payment details based on payment type
+        // if (!manualPaymentDetails || !manualPaymentDetails.paymentType) {
+        //     return res.json({success: false, message: "Payment type is required"});
+        // }
 
-        if (manualPaymentDetails.paymentType === 'paypal' && !manualPaymentDetails.paypalEmail) {
-            return res.json({success: false, message: "PayPal email is required"});
-        }
+        // if (manualPaymentDetails.paymentType === 'paypal' && !manualPaymentDetails.paypalEmail) {
+        //     return res.json({success: false, message: "PayPal email is required"});
+        // }
 
-        if (['credit_card', 'debit_card'].includes(manualPaymentDetails.paymentType)) {
-            if (!manualPaymentDetails.cardNumber || !manualPaymentDetails.cardHolderName || 
-                !manualPaymentDetails.expiryDate || !manualPaymentDetails.cvv) {
-                return res.json({success: false, message: "All card details are required"});
-            }
-        }
+        // if (['credit_card', 'debit_card'].includes(manualPaymentDetails.paymentType)) {
+        //     if (!manualPaymentDetails.cardNumber || !manualPaymentDetails.cardHolderName || 
+        //         !manualPaymentDetails.expiryDate || !manualPaymentDetails.cvv) {
+        //         return res.json({success: false, message: "All card details are required"});
+        //     }
+        // }
         
         // For crypto, transaction ID is optional based on the frontend implementation
 
@@ -428,7 +428,7 @@ const placeOrderGuest = async (req, res) => {
         let couponDetails = null;
         
         if (couponCode) {
-            const couponResult = await applyCoupon(couponCode, originalAmount - deliveryCharge);
+            const couponResult = await applyCoupon(couponCode, originalAmount, amount);
             if (couponResult.success) {
                 couponDetails = couponResult.couponDetails;
                 finalAmount = couponResult.finalAmount + deliveryCharge;
@@ -475,7 +475,7 @@ const placeOrderGuest = async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.json({success: false, message: error.message})
+        res.json({success: false, message: "Please Login to Place Order"})
     }
 }
 

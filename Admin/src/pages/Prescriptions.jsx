@@ -10,6 +10,7 @@ const Prescriptions = ({ token }) => {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null); // selected prescription for modal
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     if (!token) {
@@ -40,6 +41,25 @@ const Prescriptions = ({ token }) => {
 
     fetchPrescriptions();
   }, [token]);
+
+  // delete prescription
+  const handleDelete = async (id) => {
+    if (!id) return;
+    if (!confirm("Delete this prescription? This action cannot be undone.")) return;
+    try {
+      setDeletingId(id);
+      await axios.delete(`${backendUrl}/api/prescription/${id}`, {
+        headers: { token },
+      });
+      setPrescriptions((prev) => prev.filter((p) => p._id !== id));
+      if (selected?._id === id) setSelected(null);
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert(err.response?.data?.message || "Failed to delete prescription");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filtered = prescriptions.filter((p) => {
     if (!query.trim()) return true;
@@ -114,6 +134,14 @@ const Prescriptions = ({ token }) => {
                         title="View"
                       >
                         <Eye size={16} /> View
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p._id)}
+                        disabled={deletingId === p._id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-500 transition disabled:opacity-60"
+                        title="Delete"
+                      >
+                        {deletingId === p._id ? "Deleting..." : "Delete"}
                       </button>
                     </div>
                   </header>

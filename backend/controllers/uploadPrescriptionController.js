@@ -76,4 +76,38 @@ const getPrescriptions = async (req, res) => {
   }
 };
 
-export { uploadPrescription, getPrescriptions };
+const deletePrescription = async (req, res) => {
+  try {
+    const id = req.params.id || req.body.id;
+    if (!id) return res.status(400).json({ success: false, message: "Prescription id required" });
+
+    const pres = await prescriptionModel.findById(id);
+    if (!pres) return res.status(404).json({ success: false, message: "Prescription not found" });
+
+    const imageUrls = pres.prescriptionImages || [];
+    if (imageUrls.length > 0) {
+      // Best-effort: try to derive public_id from url and delete
+      await Promise.allSettled(imageUrls.map(async (url) => {
+        try {
+          // Matches /v123/.../folder/name.ext  => captures folder/name
+          const m = url.match(/\/(?:v\d+\/)?(.+)\.(?:jpg|jpeg|png|gif|webp|pdf|bmp|tiff)$/i);
+          if (m && m[1]) {
+            const publicId = decodeURIComponent(m[1]);
+            await cloudinary.uploader.destroy(publicId);
+          }
+        } catch (e) {
+          // ignore individual failures, but log for debugging
+          console.warn("Failed to delete cloudinary image for url:", url, e.message || e);
+        }
+      }));
+    }
+
+    await prescriptionModel.findByIdAndDelete(id);
+    return res.json({ success: true, message: "Prescription deleted" });
+  } catch (error) {
+    console.error("Delete prescription error:", error);
+    return res.status(500).json({ success: false, message: "Server error: " + error.message });
+  }
+};
+
+export { uploadPrescription, getPrescriptions, deletePrescription };
