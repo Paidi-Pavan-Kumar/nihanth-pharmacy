@@ -158,6 +158,7 @@ const getUserProfile = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 phoneNumber: user.phoneNumber,
+                savedAddresses : user.savedAddresses,
                 isPromoter: user.isPromoter
             }
         });
@@ -170,4 +171,45 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-export { loginUser, registerUser, adminLogin, getPassword, getUserProfile}
+// add update profile handler
+const updateUserProfile = async (req, res) => {
+  try {
+    const { userId, name, email, phoneNumber, savedAddresses } = req.body;
+    if (!userId) return res.json({ success: false, message: "userId required" });
+
+    // basic validation
+    if (phoneNumber && String(phoneNumber).length !== 10) {
+      return res.json({ success: false, message: "Please enter a valid 10-digit phone number" });
+    }
+    if (email && !validator.isEmail(email)) {
+      return res.json({ success: false, message: "Please enter a valid email" });
+    }
+
+    // check for duplicates
+    if (phoneNumber) {
+      const existsPhone = await userModel.findOne({ phoneNumber, _id: { $ne: userId } });
+      if (existsPhone) return res.json({ success: false, message: "Phone number already in use" });
+    }
+    if (email) {
+      const existsEmail = await userModel.findOne({ email, _id: { $ne: userId } });
+      if (existsEmail) return res.json({ success: false, message: "Email already in use" });
+    }
+
+    const update = {};
+    if (name !== undefined) update.name = name;
+    if (email !== undefined) update.email = email;
+    if (phoneNumber !== undefined) update.phoneNumber = phoneNumber;
+    if (savedAddresses !== undefined) update.savedAddresses = savedAddresses;
+
+    const user = await userModel.findByIdAndUpdate(userId, update, { new: true }).select('-password');
+
+    if (!user) return res.json({ success: false, message: "User not found" });
+
+    res.json({ success: true, user });
+  } catch (error) {
+    console.error("updateUserProfile error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { loginUser, registerUser, adminLogin, getPassword, getUserProfile, updateUserProfile}

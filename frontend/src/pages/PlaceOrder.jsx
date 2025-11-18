@@ -29,6 +29,7 @@ const PlaceOrder = () => {
     delivery_fee,
     getCartItems,
     currency,
+    user
   } = useContext(ShopContext);
   
   // helper to get numeric subtotal from context (supports both old number and new {final,...} shape)
@@ -209,6 +210,10 @@ const PlaceOrder = () => {
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
       setCouponError("Please enter a coupon code");
+      return;
+    }
+    if(user?.phoneNumber == couponCode) {
+      setCouponError("Your Number Not Acceped as Coupon code");
       return;
     }
     try {
