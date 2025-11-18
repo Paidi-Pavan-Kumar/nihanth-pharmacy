@@ -544,8 +544,10 @@ const Orders = ({ token }) => {
                   </select>
                 </td>
                 <td className="px-4 py-4">
-                  {order.paymentMethod === "COD" ||
-                  order.paymentMethod === "Manual" ? (
+                  {order.paymentMethod === "cash" ||
+                  order.paymentMethod === "Manual" || order.paymentMethod === "upi" || 
+                  order.paymentMethod === "credit-card" || order.paymentMethod === "debit-card" ||
+                  order.paymentMethod === "COD" ? (
                     <select
                       onChange={(e) => paymentStatusHandler(e, order._id)}
                       value={order.payment.toString()}

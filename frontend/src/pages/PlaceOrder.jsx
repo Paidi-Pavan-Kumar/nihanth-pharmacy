@@ -326,7 +326,7 @@ const PlaceOrder = () => {
         originalAmount: originalAmount,// numeric original amount (before coupon)
         notes: notes || "",
         couponCode: couponNumeric > 0 ? couponCode : undefined,
-        paymentMethod: "COD", // force COD
+        paymentMethod: paymentOption
       };
 
       // Only COD available
@@ -638,12 +638,12 @@ const PlaceOrder = () => {
               <p className="dark:text-gray-200 font-medium">Cash on Delivery</p>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 px-3">
-              Pay with cash when your order is delivered.
+              Pay when your order is delivered.
             </p>
 
             <div className="mt-3 px-3">
   <label className="block text-sm font-medium mb-2 dark:text-gray-300">
-    Select Payment Option
+    Select Your Preferred Payment Method During Delivery
   </label>
   <select
     value={paymentOption}

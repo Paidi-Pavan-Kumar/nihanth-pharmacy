@@ -12,7 +12,7 @@ const Coupons = ({ token }) => {
   const [formMode, setFormMode] = useState("add"); // "add" or "edit"
   const [formData, setFormData] = useState({
     code: "",
-    promoterAmount: "0", // Changed from discountType/Value to just promoterAmount
+    promoterAmount: "0",
     minOrderValue: "0",
     maxUses: "",
     startDate: new Date().toISOString().split("T")[0],
@@ -20,6 +20,10 @@ const Coupons = ({ token }) => {
     isActive: true
   });
   const [editingCouponId, setEditingCouponId] = useState(null);
+  const [updatingPromoId, setUpdatingPromoId] = useState(null);
+
+  // Search by coupon ID
+  const [searchId, setSearchId] = useState("");
 
   const fetchCoupons = async () => {
     if (!token) return;
@@ -168,22 +172,78 @@ const Coupons = ({ token }) => {
     }
   };
 
+  // Set promoterAmount to zero for a coupon
+  const handleSetPromoterZero = async (couponId) => {
+    if (!confirm("Set promoter discount to 0 for this coupon?")) return;
+    try {
+      setUpdatingPromoId(couponId);
+      const payload = { couponId, promoterAmount: 0 };
+      const res = await axios.post(backendUrl + "/api/order/coupon/update", payload, {
+        headers: { token }
+      });
+      if (res.data.success) {
+        toast.success("Promoter discount set to 0");
+        fetchCoupons();
+      } else {
+        toast.error(res.data.message || "Failed to update coupon");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to update coupon");
+    } finally {
+      setUpdatingPromoId(null);
+    }
+  };
+  
   const formatDate = (dateString) => {
     if (!dateString) return "No expiry";
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Filter coupons by ID or code if searchId set
+  // debug: verify API response shape
+  // console.log("coupons fetched:", coupons);
+
+  const q = searchId.trim().toLowerCase();
+  const filteredCoupons = q
+    ? coupons.filter((c) => {
+        const idStr = String(c._id || "").toLowerCase();
+        const codeStr = String(c.code || "").toLowerCase();
+        return idStr.includes(q) || codeStr.includes(q);
+      })
+    : coupons;
+  
   return (
     <div className="p-4 md:p-6 bg-gray-50">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Coupon Management</h1>
-        <button
-          onClick={handleAddNewClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-          disabled={loading}
-        >
-          <Plus size={16} /> Add New Coupon
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              placeholder="Search by Coupon ID"
+              className="px-3 py-2 border border-gray-300 rounded-md w-64 text-sm"
+            />
+            {searchId && (
+              <button
+                onClick={() => setSearchId("")}
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                title="Clear"
+              >
+                <X size={16} />
+              </button>
+            )}
+          </div>
+          <button
+            onClick={handleAddNewClick}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+            disabled={loading}
+          >
+            <Plus size={16} /> Add New Coupon
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -333,7 +393,7 @@ const Coupons = ({ token }) => {
           </div>
         )}
         
-        {!loading && coupons.length === 0 ? (
+        {!loading && filteredCoupons.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             No coupons found. Create your first coupon by clicking the "Add New Coupon" button.
           </div>
@@ -365,7 +425,7 @@ const Coupons = ({ token }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {coupons.map((coupon) => (
+              {filteredCoupons.map((coupon) => (
                 <tr key={coupon._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{coupon.code}</div>
@@ -399,12 +459,24 @@ const Coupons = ({ token }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 items-center">
                       <button
                         onClick={() => handleEditClick(coupon)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
                         <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleSetPromoterZero(coupon._id)}
+                        disabled={updatingPromoId === coupon._id}
+                        className="text-yellow-600 hover:text-yellow-900 px-2 py-1 rounded border text-xs"
+                        title="Set promoter discount to 0"
+                      >
+                        {updatingPromoId === coupon._id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Set 0"
+                        )}
                       </button>
                       <button
                         onClick={() => handleDeleteClick(coupon._id)}

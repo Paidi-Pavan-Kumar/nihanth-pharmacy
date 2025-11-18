@@ -23,12 +23,15 @@ const razorpayInstance = new razorpay({
 
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, originalAmount, withPromo,  address, billingAddress, notes, couponCode } = req.body;
+        const { userId, items, amount, originalAmount, withPromo,  address, billingAddress, notes, couponCode, paymentMethod } = req.body;
         
         if (!items || items.length === 0) {
             return res.json({success: false, message: "No items in cart"});
         }
 
+        if(!paymentMethod) {
+            paymentMethod = "Cash";
+        }
         // If billingAddress is not provided, use delivery address
         const finalBillingAddress = billingAddress || address;
 
@@ -114,7 +117,7 @@ if (couponResult.success) {
             billingAddress: finalBillingAddress,
             amount: finalAmount,
             originalAmount: originalAmount,
-            paymentMethod: "COD",
+            paymentMethod: paymentMethod,
             payment: false,
             status: "Order Placed",
             date: new Date(),

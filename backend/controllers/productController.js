@@ -312,96 +312,6 @@ const listProduct = async (req, res) => {
     }
 }
 
-// const listProductsForUsers = async (req, res) => {
-//     try {
-//         const {
-//             page = 1,
-//             limit = 20,
-//             category = [],
-//             subCategory = [],
-//             search = "",
-//             sortBy = "date",
-//             sortOrder = "desc",
-//             bestseller = false,
-//             excludeId = null
-//         } = req.body;
-
-//         // Build filter query
-//         let query = {};
-
-//         // If bestseller flag is provided, filter for bestsellers
-//         if (bestseller === true) {
-//             query.bestseller = true;
-//         }
-
-//         // If excludeId is provided, exclude that product
-//         if (excludeId) {
-//             query._id = { $ne: excludeId };
-//         }
-
-//         // Add search filter if provided
-//         if (search && search.trim() !== "") {
-//             query.name = { $regex: search, $options: 'i' };
-//         }
-
-//         // Add category filter if provided and not empty
-//         if (Array.isArray(category) && category.length > 0) {
-//             query.category = { $in: category };
-//         } else if (category && typeof category === 'string' && category !== "" && category !== "None") {
-//             query.category = category;
-//         }
-
-//         // Add subCategory filter if provided and not empty
-//         if (Array.isArray(subCategory) && subCategory.length > 0) {
-//             query.subCategory = { $in: subCategory };
-//         } else if (subCategory && typeof subCategory === 'string' && subCategory !== "" && subCategory !== "None") {
-//             query.subCategory = subCategory;
-//         }
-
-//         // Determine sort options
-//         const sortOptions = {};
-//         switch(sortBy) {
-//             case "price":
-//                 sortOptions.price = sortOrder === "asc" ? 1 : -1;
-//                 break;
-//             case "name":
-//                 sortOptions.name = sortOrder === "asc" ? 1 : -1;
-//                 break;
-//             case "date":
-//             default:
-//                 sortOptions.date = sortOrder === "asc" ? 1 : -1;
-//                 break;
-//         }
-
-//         // Calculate pagination
-//         const skip = (page - 1) * limit;
-
-//         // Get total count for pagination
-//         const totalProducts = await productModel.countDocuments(query);
-
-//         // Get filtered and paginated products
-//         const products = await productModel.find(query)
-//             .sort(sortOptions)
-//             .skip(skip)
-//             .limit(parseInt(limit));
-
-//         res.json({
-//             success: true,
-//             products,
-//             pagination: {
-//                 total: totalProducts,
-//                 pages: Math.ceil(totalProducts / limit),
-//                 currentPage: parseInt(page),
-//                 limit: parseInt(limit)
-//             }
-//         });
-//     } catch (error) {
-//         console.error("Error in listProductsForUsers:", error);
-//         res.json({ success: false, message: error.message });
-//     }
-// };
-
-
 const listProductsForUsers = async (req, res) => {
     try {
         const {
@@ -416,54 +326,41 @@ const listProductsForUsers = async (req, res) => {
             excludeId = null
         } = req.body;
 
-        const skip = (page - 1) * limit;
+        // Build filter query
+        let query = {};
 
-        // Build aggregation pipeline
-        const pipeline = [];
-
-        // If search is provided, use Atlas Search
-        if (search && search.trim() !== "") {
-            pipeline.push({
-                $search: {
-                    index: "default", // your index name
-                    text: {
-                        query: search,
-                        path: ["name"], // change if your product name field is different
-                        fuzzy: { maxEdits: 1 } // allows typos
-                    }
-                }
-            });
-        }
-
-        // Exclude a product if needed
-        if (excludeId) {
-            pipeline.push({
-                $match: { _id: { $ne: excludeId } }
-            });
-        }
-
-        // Filter by bestseller
+        // If bestseller flag is provided, filter for bestsellers
         if (bestseller === true) {
-            pipeline.push({ $match: { bestseller: true } });
+            query.bestseller = true;
         }
 
-        // Filter by category
+        // If excludeId is provided, exclude that product
+        if (excludeId) {
+            query._id = { $ne: excludeId };
+        }
+
+        // Add search filter if provided
+        if (search && search.trim() !== "") {
+            query.name = { $regex: search, $options: 'i' };
+        }
+
+        // Add category filter if provided and not empty
         if (Array.isArray(category) && category.length > 0) {
-            pipeline.push({ $match: { category: { $in: category } } });
-        } else if (category && typeof category === "string" && category !== "None" && category !== "") {
-            pipeline.push({ $match: { category } });
+            query.category = { $in: category };
+        } else if (category && typeof category === 'string' && category !== "" && category !== "None") {
+            query.category = category;
         }
 
-        // Filter by subCategory
+        // Add subCategory filter if provided and not empty
         if (Array.isArray(subCategory) && subCategory.length > 0) {
-            pipeline.push({ $match: { subCategory: { $in: subCategory } } });
-        } else if (subCategory && typeof subCategory === "string" && subCategory !== "None" && subCategory !== "") {
-            pipeline.push({ $match: { subCategory } });
+            query.subCategory = { $in: subCategory };
+        } else if (subCategory && typeof subCategory === 'string' && subCategory !== "" && subCategory !== "None") {
+            query.subCategory = subCategory;
         }
 
-        // Sorting
+        // Determine sort options
         const sortOptions = {};
-        switch (sortBy) {
+        switch(sortBy) {
             case "price":
                 sortOptions.price = sortOrder === "asc" ? 1 : -1;
                 break;
@@ -475,19 +372,18 @@ const listProductsForUsers = async (req, res) => {
                 sortOptions.date = sortOrder === "asc" ? 1 : -1;
                 break;
         }
-        pipeline.push({ $sort: sortOptions });
 
-        // Pagination
-        pipeline.push({ $skip: skip });
-        pipeline.push({ $limit: parseInt(limit) });
+        // Calculate pagination
+        const skip = (page - 1) * limit;
 
-        // Execute aggregation
-        const products = await productModel.aggregate(pipeline);
+        // Get total count for pagination
+        const totalProducts = await productModel.countDocuments(query);
 
-        // Total count for pagination (optional: can also use $searchMeta for more accurate count)
-        const totalProducts = await productModel.countDocuments(
-            search ? { name: { $regex: search, $options: "i" } } : {}
-        );
+        // Get filtered and paginated products
+        const products = await productModel.find(query)
+            .sort(sortOptions)
+            .skip(skip)
+            .limit(parseInt(limit));
 
         res.json({
             success: true,
@@ -504,6 +400,109 @@ const listProductsForUsers = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 };
+
+// const listProductsForUsers = async (req, res) => {
+//     try {
+//         const {
+//             page = 1,
+//             limit = 20,
+//             category = [],
+//             subCategory = [],
+//             search = "",
+//             sortBy = "date",
+//             sortOrder = "desc",
+//             bestseller = false,
+//             excludeId = null
+//         } = req.body;
+
+//         const skip = (page - 1) * limit;
+
+//         // Build aggregation pipeline
+//         const pipeline = [];
+
+//         // If search is provided, use Atlas Search
+//         if (search && search.trim() !== "") {
+//             pipeline.push({
+//                 $search: {
+//                     index: "default", // your index name
+//                     text: {
+//                         query: search,
+//                         path: ["name"], // change if your product name field is different
+//                         fuzzy: { maxEdits: 1 } // allows typos
+//                     }
+//                 }
+//             });
+//         }
+
+//         // Exclude a product if needed
+//         if (excludeId) {
+//             pipeline.push({
+//                 $match: { _id: { $ne: excludeId } }
+//             });
+//         }
+
+//         // Filter by bestseller
+//         if (bestseller === true) {
+//             pipeline.push({ $match: { bestseller: true } });
+//         }
+
+//         // Filter by category
+//         if (Array.isArray(category) && category.length > 0) {
+//             pipeline.push({ $match: { category: { $in: category } } });
+//         } else if (category && typeof category === "string" && category !== "None" && category !== "") {
+//             pipeline.push({ $match: { category } });
+//         }
+
+//         // Filter by subCategory
+//         if (Array.isArray(subCategory) && subCategory.length > 0) {
+//             pipeline.push({ $match: { subCategory: { $in: subCategory } } });
+//         } else if (subCategory && typeof subCategory === "string" && subCategory !== "None" && subCategory !== "") {
+//             pipeline.push({ $match: { subCategory } });
+//         }
+
+//         // Sorting
+//         const sortOptions = {};
+//         switch (sortBy) {
+//             case "price":
+//                 sortOptions.price = sortOrder === "asc" ? 1 : -1;
+//                 break;
+//             case "name":
+//                 sortOptions.name = sortOrder === "asc" ? 1 : -1;
+//                 break;
+//             case "date":
+//             default:
+//                 sortOptions.date = sortOrder === "asc" ? 1 : -1;
+//                 break;
+//         }
+//         pipeline.push({ $sort: sortOptions });
+
+//         // Pagination
+//         pipeline.push({ $skip: skip });
+//         pipeline.push({ $limit: parseInt(limit) });
+
+//         // Execute aggregation
+//         const products = await productModel.aggregate(pipeline);
+
+//         // Total count for pagination (optional: can also use $searchMeta for more accurate count)
+//         const totalProducts = await productModel.countDocuments(
+//             search ? { name: { $regex: search, $options: "i" } } : {}
+//         );
+
+//         res.json({
+//             success: true,
+//             products,
+//             pagination: {
+//                 total: totalProducts,
+//                 pages: Math.ceil(totalProducts / limit),
+//                 currentPage: parseInt(page),
+//                 limit: parseInt(limit)
+//             }
+//         });
+//     } catch (error) {
+//         console.error("Error in listProductsForUsers:", error);
+//         res.json({ success: false, message: error.message });
+//     }
+// };
 
 
 const removeProduct = async (req, res) => {
