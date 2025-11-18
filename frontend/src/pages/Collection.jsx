@@ -269,10 +269,10 @@ const Collection = () => {
       {/* Products Section */}
       <div className='flex-1'>
         <div className='flex justify-between items-center text-base sm:text-2xl mb-4'>
-          <Title text1={'ALL'} text2={'PRODUCTS'} />
+          <Title text1={'ALL'} text2={'PRODUCTS'}/>
 
           <div className="relative inline-block">
-            <select 
+            {/* <select 
               onChange={(e) => handleSortChange(e.target.value)} 
               value={sortOption}
               aria-label="Sort products"
@@ -281,17 +281,21 @@ const Collection = () => {
               <option value="relevant">Sort by: relevant</option>
               <option value="low-high">Sort by: Price low to high</option>
               <option value="high-low">Sort by: Price high to low</option>
-            </select>
+            </select> */}
 
             {/* custom arrow */}
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300">
+            {/* <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-300">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 12a1 1 0 01-.707-.293l-4-4a1 1 0 111.414-1.414L10 9.586l3.293-3.293a1 1 0 011.414 1.414l-4 4A1 1 0 0110 12z" clipRule="evenodd" />
               </svg>
-            </span>
+            </span> */}
           </div>
         </div>
-
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Click the cart icon <ShoppingCart className="w-5 h-5 inline-block mx-1" /> to open product details.
+          </p>
+        </div>
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="w-10 h-10 animate-spin text-gray-500 dark:text-gray-300" />
@@ -303,29 +307,90 @@ const Collection = () => {
                 No products found matching your criteria.
               </div>
             ) : (
-              <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6'>
-                {products.map((item) => (
-                  <div key={item._id} className="flex flex-col items-center">
-                  <ProductItem 
-                    key={item._id} 
-                    id={item._id} 
-                    name={item.name} 
-                    price={item.price} 
-                    image={item.image}
-                    customerDiscount={item.customerDiscount}
-                    quantityPriceList={item.quantityPriceList}
-                  />
-                  <Link 
-                to={`/product/${item._id}`} 
-                className="mt-2 mx-auto bg-primary dark:bg-[#02ADEE] text-white dark:text-gray-800 px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 hover:bg-primary/90 dark:hover:bg-yellow-500 transition-colors"
-              >
-                <ShoppingCart size={14} />
-                Buy Now
-              </Link>
-              </div>
-                ))}
-              </div>
-            )}
+              <>
+                {/* Mobile: simple list (name + packing + selling price + mrp + discount) */}
+                <div className="block sm:hidden">
+                  {products.map(item => {
+                    const mrp = Number(item.price || 0); // price is treated as MRP
+                    const discount = Number(item.customerDiscount || 0);
+                    const selling = (mrp * (100 - discount) / 100);
+                    return (
+                      <div
+                        key={item._id}
+                        className="flex items-center justify-between py-3 px-3 border-b border-gray-100 dark:border-gray-700"
+                      >
+                        <Link to={`/product/${item._id}`} className="flex-1 min-w-0 pr-3">
+                          <div className="flex flex-col">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                              {item.name}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                              {item.packing}
+                            </div>
+                          </div>
+                        </Link>
+
+                        <div className="flex flex-col items-end justify-center ml-3">
+                          {discount > 0 ? (
+                            <>
+                              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                ₹{selling.toFixed(2)}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 line-through mt-1">
+                                ₹{mrp.toFixed(2)}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                              ₹{mrp.toFixed(2)}
+                            </div>
+                          )}
+
+                          {discount > 0 ? (
+                            <div className="mt-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-transparent px-2 py-0.5 rounded-full">
+                              {discount}% off
+                            </div>
+                          ) : (
+                            <div className="mt-1 text-xs text-gray-400">—</div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => window.location.assign(`/product/${item._id}`)}
+                          aria-label="Open product"
+                          className="ml-3 w-10 h-10 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-transparent"
+                        >
+                          <ShoppingCart className="w-5 h-5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop / tablet: existing grid with full ProductItem */}
+                <div className='hidden sm:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6'>
+                  {products.map((item) => (
+                    <div key={item._id} className="flex flex-col items-center">
+                      <ProductItem 
+                        id={item._id} 
+                        name={item.name} 
+                        price={item.price} 
+                        image={item.image}
+                        customerDiscount={item.customerDiscount}
+                        quantityPriceList={item.quantityPriceList}
+                      />
+                      <Link 
+                        to={`/product/${item._id}`} 
+                        className="mt-2 mx-auto bg-primary dark:bg-[#02ADEE] text-white dark:text-gray-800 px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1 hover:bg-primary/90 dark:hover:bg-yellow-500 transition-colors"
+                      >
+                        <ShoppingCart size={14} />
+                        Buy Now
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </>
+             )}
             
             {/* Pagination */}
             {pagination.pages > 1 && (
