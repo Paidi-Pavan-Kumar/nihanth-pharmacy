@@ -355,13 +355,20 @@ const Collection = () => {
                           )}
                         </div>
 
-                        <button
+                        {/* <button
                           onClick={() => window.location.assign(`/product/${item._id}`)}
                           aria-label="Open product"
                           className="ml-3 w-10 h-10 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-transparent"
                         >
                           <ShoppingCart className="w-5 h-5" />
-                        </button>
+                        </button> */}
+
+                        <Link to={`/product/${item._id}`}>
+  <button className= "ml-3 w-10 h-10 flex items-center justify-center rounded border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-white dark:bg-transparent">
+    <ShoppingCart className="w-5 h-5" />
+  </button>
+</Link>
+
                       </div>
                     );
                   })}

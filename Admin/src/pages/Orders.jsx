@@ -374,9 +374,13 @@ const Orders = ({ token }) => {
                     </div>
                     <div>
                       {order.userId ? (
-                        <div className="text-sm font-medium text-gray-800">
-                          User ID: {order.userId}
-                        </div>
+                        // <div className="text-sm font-medium text-gray-800">
+                        //   User ID: {order.userId}
+                        // </div>
+                        <div className="font-medium text-gray-800">
+                            {order.billingAddress.firstName}{" "}
+                            {order.billingAddress.lastName}
+                          </div>
                       ) : (
                         <div className="text-sm font-medium text-gray-800">
                           Guest User
@@ -582,7 +586,10 @@ const Orders = ({ token }) => {
                         <span className="font-medium text-gray-800">Coupon:</span>
                         <div className="text-xs text-gray-600 mt-1">
                           <div>Code: <span className="font-medium">{order.coupon.code}</span></div>
-                          <div>Discount: {currency} {order.coupon.discount}</div>
+                          <div>
+  Discount: {currency} {Number(order.coupon.discount).toFixed(2)}
+</div>
+
                           {order.originalAmount && (
                             <div>Original Total: {currency} {order.originalAmount}</div>
                           )}

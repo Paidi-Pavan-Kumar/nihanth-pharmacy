@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 const PlaceOrder = () => {
   // set default payment method to COD and remove other payment states
-  const [paymentOption, setPaymentOption] = useState("Cash")
+  const [paymentOption, setPaymentOption] = useState("cash")
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);

@@ -30,7 +30,7 @@ const placeOrder = async (req, res) => {
         }
 
         if(!paymentMethod) {
-            paymentMethod = "Cash";
+            paymentMethod = "cash";
         }
         // If billingAddress is not provided, use delivery address
         const finalBillingAddress = billingAddress || address;
