@@ -64,7 +64,7 @@ const Policy = () => {
             <div className="flex items-center gap-2">
               <ScrollText className="text-primary" size={24} />
               <h2 className="text-xl font-semibold">
-                Nihanth Pharmacy Terms and Conditions
+                MediQuick Terms and Conditions
               </h2>
             </div>
             <button
@@ -80,14 +80,14 @@ const Policy = () => {
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">1. Acceptance of Terms</h3>
               <p>
-                By accessing or using the services of Nihanth Pharmacy, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these Terms, you may not access or use our services.
+                By accessing or using the services of MediQuick, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these Terms, you may not access or use our services.
               </p>
             </div>
 
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">2. Delivery Policy</h3>
               <p>
-                Nihanth Pharmacy aims to deliver medicines within the estimated delivery time. However, actual delivery times may vary depending on the location, product availability, and external factors.
+                MediQuick aims to deliver medicines within the estimated delivery time. However, actual delivery times may vary depending on the location, product availability, and external factors.
               </p>
               <ul className="list-disc ml-5 mt-2 space-y-1">
                 <li>Express Delivery: Within 24 hours (where available)</li>
@@ -134,10 +134,10 @@ const Policy = () => {
             <div>
               <h3 className="font-semibold text-gray-800 mb-2">5. Disclaimer of Warranties</h3>
               <p>
-                All information provided by Nihanth Pharmacy is for general informational purposes only and should not be considered medical advice. Always consult a qualified healthcare professional for diagnosis or treatment.
+                All information provided by MediQuick is for general informational purposes only and should not be considered medical advice. Always consult a qualified healthcare professional for diagnosis or treatment.
               </p>
               <p className="mt-2">
-                Nihanth Pharmacy makes no representations or warranties regarding the accuracy, reliability, or completeness of the information provided on its website or related materials.
+                MediQuick makes no representations or warranties regarding the accuracy, reliability, or completeness of the information provided on its website or related materials.
               </p>
             </div>
 
@@ -171,7 +171,7 @@ const Policy = () => {
 
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <p className="text-sm text-gray-500 text-center">
-            Last updated: March 2025. Nihanth Pharmacy reserves the right to modify these terms and conditions at any time. Continued use of our services after any modifications indicates your acceptance of the updated terms.
+            Last updated: March 2025. MediQuick reserves the right to modify these terms and conditions at any time. Continued use of our services after any modifications indicates your acceptance of the updated terms.
           </p>
         </div>
       </div>

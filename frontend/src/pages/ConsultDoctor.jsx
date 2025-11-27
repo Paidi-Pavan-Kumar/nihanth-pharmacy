@@ -27,7 +27,7 @@ const ConsultDoctor = () => {
           {/* Header - Adjusted padding for mobile */}
           <div className="bg-[#02ADEE] px-4 sm:px-6 py-6 sm:py-8 text-white text-center">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Online Doctor Consultation</h1>
-            <p className="text-sm sm:text-base text-blue-100">Coming Soon to Nihanth Pharmacy</p>
+            <p className="text-sm sm:text-base text-blue-100">Coming Soon to MediQuick</p>
           </div>
 
           {/* Content - Improved spacing for mobile */}

@@ -34,7 +34,7 @@ const Footer = () => {
       <div className="flex flex-col sm:grid grid-cols-[3fr_1fr_1fr] gap-14 mb-10 text-small">
         <div>
           <Link to="/" className="font-display text-2xl text-primary dark:text-[#02ADEE]">
-            Nihanth Pharma
+            MediQuick
           </Link>
           <p className="w-full md:w-2/3 text-gray-600 dark:text-gray-300 mt-2">
             Your Trusted Online Medicine & Healthcare Partner
