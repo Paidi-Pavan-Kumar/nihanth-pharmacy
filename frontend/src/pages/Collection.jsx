@@ -3,8 +3,9 @@ import { ShopContext } from '../context/ShopContext';
 import { assets } from '../assets/assets';
 import Title from '../components/Title';
 import ProductItem from '../components/ProductItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ShoppingCart, Loader2, X } from 'lucide-react';
+import WhatsAppButton from '../components/WhatsAppButton'; // Adjust path as needed
 
 const Collection = () => {
   const { 
@@ -22,6 +23,7 @@ const Collection = () => {
   const [subCategoryFilters, setSubCategoryFilters] = useState([]);
   const [sortOption, setSortOption] = useState('relevant');
   const [initialized, setInitialized] = useState(false);
+  const navigate = useNavigate();
   
   // Initialize filter states from context when component mounts or filters change
   useEffect(() => {
@@ -303,8 +305,22 @@ const Collection = () => {
         ) : (
           <>
             {products.length === 0 ? (
-              <div className="text-center p-10 text-gray-500 dark:text-gray-300">
-                No products found matching your criteria.
+              <div className="flex flex-col items-center justify-center py-16">
+                <p className="text-lg text-gray-700 mb-2">
+                  No medicines found for your search.
+                </p>
+                <p className="text-base text-gray-500 mb-6 text-center max-w-md">
+                  If you can't find your medicine, you can upload your prescription or contact us directly on WhatsApp for assistance. Our team will help you get the medicines you need.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => navigate("/upload-prescription")}
+                    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  >
+                    Upload Prescription
+                  </button>
+                  <WhatsAppButton />
+                </div>
               </div>
             ) : (
               <>

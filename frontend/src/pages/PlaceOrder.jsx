@@ -333,7 +333,6 @@ const PlaceOrder = () => {
         couponCode: couponNumeric > 0 ? couponCode : undefined,
         paymentMethod: paymentOption
       };
-
       // Only COD available
       const response = await axios.post(
         backendUrl + "/api/order/place",

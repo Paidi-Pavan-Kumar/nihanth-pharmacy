@@ -212,4 +212,36 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, adminLogin, getPassword, getUserProfile, updateUserProfile}
+// add get all users (paginated)
+const getAllUsers = async (req, res) => {
+  try {
+    // optional pagination: ?page=1&limit=50
+    const page = Math.max(1, parseInt(req.query.page || 1, 10));
+    const limit = Math.max(1, parseInt(req.query.limit || 50, 10));
+    const skip = (page - 1) * limit;
+
+    const total = await userModel.countDocuments();
+    const users = await userModel
+      .find()
+      .select('-password') // never return password
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      success: true,
+      users,
+      meta: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error('getAllUsers error:', error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { loginUser, registerUser, adminLogin, getPassword, getUserProfile, updateUserProfile, getAllUsers}

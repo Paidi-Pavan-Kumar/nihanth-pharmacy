@@ -111,7 +111,10 @@ if (couponResult.success) {
                 name: item.name,
                 price: item.price,
                 image: item.image,
-                quantity: item.quantity
+                quantity: item.quantity,
+                mrp : item.prices.mrp,
+                sellingPrice : item.prices.final,
+                discount : item.customerDiscount
             })),
             address,
             billingAddress: finalBillingAddress,
@@ -124,7 +127,6 @@ if (couponResult.success) {
             notes: notes || "",
             coupon: couponDetails
         }
-
         const newOrder = new orderModel(orderData)
         await newOrder.save()
 

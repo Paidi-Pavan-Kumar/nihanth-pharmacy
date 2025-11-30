@@ -176,7 +176,8 @@ const Orders = () => {
                               <p className="font-medium dark:text-white">{item.name}</p>
                               <div className="flex space-x-4 text-sm text-gray-500 dark:text-gray-400">
                                 <p>Quantity: {item.quantity}</p>
-                                {/* <p>Price: {currency}{item.}</p> */}
+                                <p>Price: {currency}{item.mrp}</p>
+                                <p>Selling Price: {currency}{item.sellingPrice}</p>
                               </div>
                             </div>
                           </div>
