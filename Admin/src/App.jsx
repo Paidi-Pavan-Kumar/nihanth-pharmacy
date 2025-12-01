@@ -17,6 +17,7 @@ import BlogManagement from './pages/BlogManagement'
 import Prescriptions from './pages/Prescriptions'
 import BulkUpload from './pages/BulkUpload'
 import Customers from './pages/Customers'
+import Dashboard from './pages/Dashboard'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL
 export const frontendUrl = import.meta.env.VITE_FRONTEND_URL
@@ -51,7 +52,9 @@ const App = () => {
             <Route path='/crypto-wallets' element={<CryptoWallets token={token} />} />
             <Route path='/blogs' element={<BlogManagement token={token} />} />
             <Route path='/prescriptions' element={<Prescriptions token={token} />} />
+            <Route path='/dashboard' element={<Dashboard token={token} />} />
             <Route path='/bulkupload' element={<BulkUpload />}/>
+
           </Routes>
         </div>
       </div>
