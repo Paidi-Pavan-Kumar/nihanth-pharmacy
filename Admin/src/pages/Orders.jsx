@@ -15,10 +15,12 @@ import {
 import PropTypes from "prop-types";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import qrPlaceholder from "../assets/qrPlaceholder.png";
+import qrPlaceholder from "../assets/qrPlaceholder.jpg";
 
 const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
+  // Used to compute frontend-only sequential order numbers (oldest = 1)
+  const [allOrderIdsSortedByDate, setAllOrderIdsSortedByDate] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [ordersPerPage, setOrdersPerPage] = useState(10);
@@ -173,9 +175,29 @@ const Orders = ({ token }) => {
     fetchAllOrders();
   }, [token, currentPage, ordersPerPage, filters]);
 
+  // fetch minimal list once (sorted by date) so we can generate sequential invoice ids on frontend
   useEffect(() => {
-    handleFilter();
-  }, [filters]);
+    const fetchAllIds = async () => {
+      if (!token) return;
+      try {
+        const res = await axios.post(
+          backendUrl + "/api/order/list",
+          { page: 1, limit: 100000 }, // large limit — adjust if you have huge dataset
+          { headers: { token } }
+        );
+        if (res.data?.success && Array.isArray(res.data.orders)) {
+          const idsByDate = res.data.orders
+            .slice()
+            .sort((a, b) => Number(a.date || 0) - Number(b.date || 0))
+            .map((o) => o._id);
+          setAllOrderIdsSortedByDate(idsByDate);
+        }
+      } catch (err) {
+        // ignore — fallback to index-based numbering below
+      }
+    };
+    fetchAllIds();
+  }, [token]);
 
   const formatInvoiceDate = (ts) => {
     try {
@@ -187,322 +209,370 @@ const Orders = ({ token }) => {
   };
 
   const generateInvoice = async (order) => {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  let y = 12;
-  const pad = 12;
+    const doc = new jsPDF({ unit: "mm", format: "a5", orientation: "landscape" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 4;
+    const pad = 8;
+    const deliver = order.address || {};
+    const doctor = deliver.country != null ? deliver.country : "Over the counter";
+    const patientname = deliver.firstName ? `${deliver.firstName} ${deliver.lastName || ""}`.trim() : ""
+    const ensureSpace = (needed) => {
+      if (y + needed > pageHeight - pad) {
+        doc.addPage();
+        y = pad;
+      }
+    };
 
-  // ---------- COLORS ----------
-  const PRIMARY = [30, 80, 180];     // Blue
-  const LIGHT_GRAY = [240, 240, 240];
-  const BORDER_GRAY = [180, 180, 180];
-  const DARK_TEXT = [40, 40, 40];
+    const smallQR = 22;
+    const PRIMARY = [30, 80, 180];
+    const LIGHT_GRAY = [240, 240, 240];
+    const BORDER_GRAY = [180, 180, 180];
+    const DARK_TEXT = [40, 40, 40];
 
-  // ---------- HEADER ----------
-  doc.setFontSize(18);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...PRIMARY);
-  doc.text("MEDIQUICK PHARMACY", pageWidth / 2, y, { align: "center" });
+    // ---------- HEADER (left: company info + logo, right: QR) ----------
+    const headerLeftWidth = pageWidth / 2 - pad;
+    const headerRightX = pageWidth / 2 + pad;
 
-  y += 7;
-  doc.setFontSize(10);
-  doc.setTextColor(60, 60, 60);
-  doc.text("Bangalore, Karnataka", pageWidth / 2, y, { align: "center" });
-
-  y += 4;
-  doc.text("Phone: +91 89048 13463  |  Email Id : nihanthpharmacy@gmail.com | Website : https://www.mediquick1.com", pageWidth / 2, y, {
-    align: "center",
-  });
-
-  // HEADER DIVIDER
-  y += 6;
-  doc.setDrawColor(...PRIMARY);
-  doc.setLineWidth(0.7);
-  doc.line(pad, y, pageWidth - pad, y);
-  y += 10;
-
-  // ---------- INVOICE BOX ----------
-  doc.setDrawColor(...BORDER_GRAY);
-  doc.setFillColor(...LIGHT_GRAY);
-  doc.roundedRect(pad, y, pageWidth - pad * 2, 22, 3, 3, "F");
-
-  doc.setTextColor(...DARK_TEXT);
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "bold");
-
-  y += 8;
-  doc.text(`Invoice ID:`, pad + 4, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(String(order._id), pad + 34, y);
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Invoice Date:", pageWidth / 2, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(formatInvoiceDate(order.date), pageWidth / 2 + 28, y);
-
-  y += 7;
-  doc.setFont("helvetica", "bold");
-  doc.text("Payment Method:", pad + 4, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(order.paymentMethod || "-", pad + 36, y);
-
-  y += 15;
-
-  // ---------- ADDRESS SECTION (delivery only, full width) ----------
-  const delivery = order.address || {};
-  const wrapWidth = Math.floor(pageWidth - pad * 2 - 16); // full-width wrap
-  const deliveryLines = [
-    delivery.firstName ? `${delivery.firstName} ${delivery.lastName || ""}`.trim() : null,
-    delivery.email || null,
-    delivery.phone || null,
-    ...(delivery.street ? doc.splitTextToSize(delivery.street, wrapWidth) : []),
-    [delivery.city, delivery.state].filter(Boolean).join(", ") || null,
-    [delivery.zipcode, delivery.country].filter(Boolean).join(" ") || null,
-  ].filter(Boolean);
-
-  const titleHeight = 7;
-  const lineHeight = 6;
-  const innerPadding = 10;
-  const addrBoxHeight = titleHeight + deliveryLines.length * lineHeight + innerPadding;
-
-  doc.setDrawColor(...BORDER_GRAY);
-  doc.setFillColor(250, 250, 250);
-  doc.roundedRect(pad, y, pageWidth - pad * 2, addrBoxHeight, 4, 4, "F");
-
-  let addrY = y + titleHeight;
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(40, 40, 40);
-  doc.text("Delivery Address", pad + 6, addrY);
-  addrY += lineHeight;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  deliveryLines.forEach((ln) => {
-    doc.text(String(ln), pad + 6, addrY);
-    addrY += lineHeight;
-  });
-
-  // Advance y below the delivery block
-  y += addrBoxHeight + 10;
-
-  // Divider
-  doc.setDrawColor(...PRIMARY);
-  doc.line(pad, y, pageWidth - pad, y);
-  y += 10;
-
-  // ---------- ITEMS HEADER ----------
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("Items", pad, y);
-
-  y += 8;
-
-  // TABLE HEADER (updated to show MRP / Unit / Disc / Qty / Total)
-  doc.setFillColor(230, 235, 250);
-  doc.rect(pad, y, pageWidth - pad * 2, 8, "F");
-
-  doc.setFontSize(10);
-  doc.setTextColor(20, 20, 20);
-  doc.text("No.", pad + 2, y + 5);
-  doc.text("Description", pad + 18, y + 5);
-  doc.text("MRP", pageWidth - 130, y + 5, { align: "right" });
-  doc.text("Final", pageWidth - 100, y + 5, { align: "right" });
-  doc.text("Disc", pageWidth - 70, y + 5, { align: "right" });
-  doc.text("Qty", pageWidth - 46, y + 5, { align: "right" });
-  doc.text("Total", pageWidth - 12, y + 5, { align: "right" });
-
-  y += 12;
-
-  // ITEMS LIST (uses item.mrp / sellingPrice / discount where available)
-  const items = order.items || [];
-  doc.setFont("helvetica", "normal");
-
-  // compute detailed totals:
-  let subtotalMRP = 0;        // sum(qty * mrp)
-  let sellingTotal = 0;      // sum(qty * sellingPrice)
-  let customerDiscountAmount = 0; // subtotalMRP - sellingTotal
-
-  items.forEach((it, i) => {
-    const qty = Number(it.quantity || 0);
-    const mrp = it.mrp != null ? Number(it.mrp / qty) : (it.price != null ? Number(it.price) : 0);
-    const selling = it.sellingPrice != null ? Number(it.sellingPrice / qty) : (it.price != null ? Number(it.price) : mrp);
-    const itemDiscountPercent = it.discount != null ? Number(it.discount) : (it.customerDiscount != null ? Number(it.customerDiscount) : null);
-
-    const mrpLine = mrp * qty;
-    const sellingLine = selling * qty;
-    subtotalMRP += mrpLine;
-    sellingTotal += sellingLine;
-    // accumulate per-item customer discount (MRP - selling)
-    customerDiscountAmount += Math.max(0, mrpLine - sellingLine);
-
-    // ensure page break if running out of space
-    if (y + 18 > pageHeight - 40) {
-      doc.addPage();
-      y = pad;
-    }
-
-    // draw row
-    doc.text(String(i + 1), pad + 2, y);
-    // description wraps if long
-    const descLines = doc.splitTextToSize(it.name || "-", pageWidth - pad * 2 - 160);
-    doc.text(descLines, pad + 18, y);
-    // align numeric fields on same baseline (if desc wraps, push them down)
-    const rowHeight = Math.max( (descLines.length * 5), 6 );
-    const baselineY = y + (rowHeight > 6 ? (rowHeight - 2) : 0);
-    doc.text(mrp != null ? `${mrp.toFixed(2)}` : "-", pageWidth - 130, baselineY, { align: "right" });
-    doc.text(`${selling.toFixed(2)}`, pageWidth - 100, baselineY, { align: "right" });
-    doc.text(itemDiscountPercent != null ? `${itemDiscountPercent}%` : "-", pageWidth - 70, baselineY, { align: "right" });
-    doc.text(String(qty), pageWidth - 46, baselineY, { align: "right" });
-    // 'Total' column shows MRP total per line (qty * mrp)
-    doc.text(`${mrpLine.toFixed(2)}`, pageWidth - 12, baselineY, { align: "right" });
-
-    y += Math.max(rowHeight, 7);
-    y += 2;
-  });
-
-  y += 6;
-
-  // ---------- TOTALS SECTION (show breakdown: MRP total, selling total, customer discount, coupon, final) ----------
-  const subtotalValue = subtotalMRP;
-  const sellingValue = sellingTotal;
-  const customerDiscount = customerDiscountAmount;
-  // coupon discount at order level
-  let couponDiscountAmount = 0;
-  if (order.coupon && order.coupon.discount != null) {
-    if ((order.coupon.discountType || "").toLowerCase() === "percentage") {
-      couponDiscountAmount = order.coupon.discount
-    } else {
-      couponDiscountAmount = Number(order.coupon.discount || 0);
-    }
-  }
-  // final amount expected (fallback to order.amount)
-  const totalValue = Number(order.amount ?? sellingValue - couponDiscountAmount ?? 0);
-
-  doc.setFillColor(255, 255, 255);
-  doc.rect(pageWidth - 120, y - 2, 108, 36, "F");
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-
-  // Subtotal (MRP total)
-  doc.text("Subtotal (MRP):", pageWidth - 115, y);
-  doc.text(` ${subtotalValue.toFixed(2)}`, pageWidth - 12, y, { align: "right" });
-  y += 6;
-
-  // Selling total and customer discount
-  doc.text("Selling Total:", pageWidth - 115, y);
-  doc.text(` ${sellingValue.toFixed(2)}`, pageWidth - 12, y, { align: "right" });
-  y += 6;
-  doc.text("Customer Discount:", pageWidth - 115, y);
-  doc.text(`- ${customerDiscount.toFixed(2)}`, pageWidth - 12, y, { align: "right" });
-  y += 6;
-
-  if (order.coupon && order.coupon.discount != null) {
-    const coupon = order.coupon;
-    const discountLabel =
-      (coupon.discountType || "").toLowerCase() === "percentag"
-        ? `${Number(coupon.discount).toFixed(2)}`
-        : ` ${Number(coupon.discount).toFixed(2)}`;
-    doc.text("Coupon Discount:", pageWidth - 115, y);
-    doc.text(`- ${couponDiscountAmount.toFixed(2)}`, pageWidth - 12, y, { align: "right" });
-    y += 6;
-  }
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Total:", pageWidth - 115, y);
-  doc.text(`${totalValue.toFixed(2)}`, pageWidth - 12, y, { align: "right" });
-  y += 12;
-
-  // ---------- PAYMENT STATUS ----------
-  if (order.payment) {
-    // QR placeholder image (use shipped asset). loads safely and drawn inside rounded box.
+    // LEFT SIDE: Logo + Company Details
     try {
-      const qrW = 48;
-      const qrX = pageWidth - pad - qrW;
-      const qrY = y - 6;
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = qrPlaceholder;
-      await new Promise((res) => {
-        img.onload = res;
-        img.onerror = res;
-      });
-
-      // white rounded background + border
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(200);
-      doc.roundedRect(qrX - 4, qrY - 4, qrW + 8, qrW + 8, 4, 4, "FD");
-      // embed image
-      doc.addImage(img, "PNG", qrX, qrY, qrW, qrW);
-      doc.setFontSize(8);
-      doc.setTextColor(110, 110, 110);
-      doc.text("Scan to Pay", qrX + qrW / 2, qrY + qrW + 6, { align: "center" });
-    } catch (err) {
-      // fallback rectangle
-      doc.setDrawColor(150);
-      doc.rect(pageWidth - 60, y - 2, 40, 40);
-      doc.setFontSize(9);
-      doc.text("Scan to Pay", pageWidth - 40, y + 16, { align: "center" });
+      const logo = new Image();
+      logo.crossOrigin = "Anonymous";
+      logo.src = "/vite.png"; // replace with actual logo path
+      await new Promise((res) => { logo.onload = res; logo.onerror = res; });
+      const logoW = 16, logoH = 16;
+      doc.addImage(logo, "PNG", pad, y, logoW, logoH);
+    } catch (e) {
+      // ignore if logo fails
     }
-  } else {
 
-    // QR placeholder image (use shipped asset). loads safely and drawn inside rounded box.
-    try {
-      const qrW = 48;
-      const qrX = pageWidth - pad - qrW;
-      const qrY = y - 6;
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = qrPlaceholder;
-      await new Promise((res) => {
-        img.onload = res;
-        img.onerror = res;
-      });
-
-      // white rounded background + border
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(200);
-      doc.roundedRect(qrX - 4, qrY - 4, qrW + 8, qrW + 8, 4, 4, "FD");
-      // embed image
-      doc.addImage(img, "PNG", qrX, qrY, qrW, qrW);
-      doc.setFontSize(8);
-      doc.setTextColor(110, 110, 110);
-      doc.text("Scan to Pay", qrX + qrW / 2, qrY + qrW + 6, { align: "center" });
-    } catch (err) {
-      // fallback rectangle
-      doc.setDrawColor(150);
-      doc.rect(pageWidth - 60, y - 2, 40, 40);
-      doc.setFontSize(9);
-      doc.text("Scan to Pay", pageWidth - 40, y + 16, { align: "center" });
-    }
-  }
-
-  y += 40;
-
-  // ---------- NOTES ----------
-  if (order.notes) {
+    // Company name next to logo
     doc.setFont("helvetica", "bold");
-    doc.text("Notes:", pad, y);
-    y += 6;
+    doc.setFontSize(11);
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("MEDIQUICK", pad + 18, y + 3);
+
+    // Tagline
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(60, 60, 60);
+    doc.text("", pad + 18, y + 8);
+
+    // Address lines
+    doc.setFontSize(6.5);
+    const addressLines = doc.splitTextToSize(
+      "Bangalore, Karnataka, India",
+      headerLeftWidth - 4
+    );
+    doc.text(addressLines, pad + 18, y + 8);
+
+    // Contact details
+    const contactY = y + 12;
+    doc.setFontSize(6);
+    doc.text("M: +91 8904813463   Email: mediquickcontact@gmail.com", pad + 18, contactY);
+
+    // RIGHT SIDE: QR Code (small, top right) + Invoice details (beside QR)
+    const qrW = smallQR;
+    const qrX = pageWidth - pad - qrW - 2;
+    const qrY = y;
+    
+    // QR Code
+    try {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = qrPlaceholder;
+      await new Promise((res) => { img.onload = res; img.onerror = res; });
+
+      // QR white background + border
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(200);
+      doc.roundedRect(qrX - 1.5, qrY - 1.5, qrW + 3, qrW + 3, 1.5, 1.5, "FD");
+      doc.addImage(img, "PNG", qrX, qrY, qrW, qrW);
+    } catch (e) {
+      // fallback
+      doc.setDrawColor(150);
+      doc.rect(qrX, qrY, qrW, qrW);
+    }
+
+    // Invoice metadata (RIGHT of QR code, vertically stacked)
+    const metaX = pageWidth - pad - qrW - 40;  // to the left of QR
+    let metaY = y + 2;
+    
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("Invoice", metaX, metaY);
+
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "normal");
+    const indexInAll = allOrderIdsSortedByDate.indexOf(order._id);
+    const invoiceLabel = indexInAll !== -1 ? String(indexInAll + 1) : String(order._id || "");
+    
+    metaY += 3.5;
+    doc.text(`Bill No: ${invoiceLabel}`, metaX, metaY);
+    metaY += 3;
+    doc.text(`Payment: ${order.payment ? "Paid" : "Due(Scan QR to Pay)"}`, metaX, metaY);
+    metaY += 3;
+    doc.text(formatInvoiceDate(order.date), metaX, metaY);
+    metaY += 3;
+    doc.text(`Patient: ${patientname}`, metaX, metaY);
+    metaY += 3;
+    doc.text(`Ref By: DR.${doctor}`, metaX, metaY);
+    y += 24;
+
+    // ---------- DIVIDER ----------
+    doc.setDrawColor(...PRIMARY);
+    doc.setLineWidth(0.6);
+    doc.line(pad, y, pageWidth - pad, y);
+    y += 1;
+
+    // ---------- ADDRESS SECTION ----------
+    const delivery = order.address || {};
+    const wrapWidth = Math.floor(pageWidth - pad * 2 - 16);
+    
+    // Compact address: max 2 lines
+    const deliveryLines = [];
+    
+    // Line 1: Name + Phone + Street
+    const line1Parts = [
+      delivery.firstName ? `${delivery.firstName} ${delivery.lastName || ""}`.trim() : "",
+      delivery.phone ? `Ph: ${delivery.phone}` : "",
+      delivery.street ? delivery.street : ""
+    ].filter(Boolean).join(", ");
+    
+    if (line1Parts) {
+      const wrapped1 = doc.splitTextToSize(line1Parts, wrapWidth);
+      deliveryLines.push(...wrapped1);
+    }
+    
+    // Line 2: City, State, Zipcode, Country
+    const line2Parts = [
+      delivery.city || "",
+      delivery.state || "",
+      delivery.zipcode || "",
+    ].filter(Boolean).join(", ");
+    
+    if (line2Parts) {
+      const wrapped2 = doc.splitTextToSize(line2Parts, wrapWidth);
+      deliveryLines.push(...wrapped2);
+    }
+
+    const titleHeight = 7;
+    const lineHeight = 5;
+    const innerPadding = 6;
+    const addrBoxHeight = titleHeight + deliveryLines.length * lineHeight + innerPadding;
+
+    doc.setDrawColor(...BORDER_GRAY);
+    doc.setFillColor(250, 250, 250);
+    doc.roundedRect(pad, y, pageWidth - pad * 2, addrBoxHeight, 4, 4, "F");
+
+    let addrY = y + titleHeight;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(7);
+    doc.text("Delivery Address", pad + 6, addrY);
+    addrY += lineHeight;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(6);
+    deliveryLines.forEach((ln) => {
+      doc.text(String(ln), pad + 6, addrY);
+      addrY += lineHeight;
+    });
+
+    y += addrBoxHeight + 2;
+
+    // Divider
+    doc.setDrawColor(...PRIMARY);
+    doc.line(pad, y, pageWidth - pad, y);
+    y += 1;
+
+    // ---------- ITEMS HEADER ----------
+    doc.setFillColor(230, 235, 250);
+    doc.rect(pad, y, pageWidth - pad * 2, 8, "F");
+
+    doc.setFontSize(8);
+    doc.setTextColor(20, 20, 20);
+    doc.text("No.", pad + 2, y + 5);
+    doc.text("Description", pad + 18, y + 5);
+    doc.text("MRP", pageWidth - 130, y + 5, { align: "right" });
+    doc.text("Final", pageWidth - 100, y + 5, { align: "right" });
+    doc.text("Disc", pageWidth - 70, y + 5, { align: "right" });
+    doc.text("Qty", pageWidth - 46, y + 5, { align: "right" });
+    doc.text("Total", pageWidth - 12, y + 5, { align: "right" });
+
+    y += 12;
+
+    // ---------- ITEMS LIST ----------
+    const items = order.items || [];
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+
+    let subtotalMRP = 0;
+    let sellingTotal = 0;
+    let customerDiscountAmount = 0;
+
+    items.forEach((it, i) => {
+      const qty = Number(it.quantity || 1) || 1;
+      const mrp = it.mrp != null ? Number(it.mrp / qty) : (it.price != null ? Number(it.price) : 0);
+      const selling = it.sellingPrice != null ? Number(it.sellingPrice / qty) : (it.price != null ? Number(it.price) : mrp);
+      const itemDiscountPercent = it.discount != null ? Number(it.discount) : (it.customerDiscount != null ? Number(it.customerDiscount) : null);
+
+      const mrpLine = mrp * qty;
+      const sellingLine = selling * qty;
+      subtotalMRP += mrpLine;
+      sellingTotal += sellingLine;
+      customerDiscountAmount += Math.max(0, mrpLine - sellingLine);
+
+      const descWidth = pageWidth - pad * 2 - 160;
+      const descLines = doc.splitTextToSize((it.name+" # "+ (it.packing != null ? it.packing : "")) || "-", descWidth);
+      const lineHeight = 1;
+      const rowHeight = Math.max(descLines.length * lineHeight, 5);
+
+      if (y + rowHeight + 6 > pageHeight - 10) {
+        doc.addPage();
+        y = pad;
+      }
+
+      doc.text(String(i + 1), pad + 2, y);
+      doc.text(descLines, pad + 18, y);
+
+      const baselineY = y;
+      doc.text(mrp != null ? mrp.toFixed(2) : "-", pageWidth - 130, baselineY, { align: "right" });
+      doc.text(selling.toFixed(2), pageWidth - 100, baselineY, { align: "right" });
+      doc.text(itemDiscountPercent != null ? `${itemDiscountPercent}%` : "-", pageWidth - 70, baselineY, { align: "right" });
+      doc.text(String(qty), pageWidth - 46, baselineY, { align: "right" });
+      doc.text(mrpLine.toFixed(2), pageWidth - 12, baselineY, { align: "right" });
+
+      y += rowHeight + 0.1;
+    });
+
+    y += 1;
+
+    // ---------- TOTALS SECTION (TABLE LAYOUT) ----------
+    const subtotalValue = subtotalMRP;
+    const sellingValue = sellingTotal;
+    const customerDiscount = customerDiscountAmount;
+    let couponDiscountAmount = 0;
+    if (order.coupon && order.coupon.discount != null) {
+      if ((order.coupon.discountType || "").toLowerCase() === "percentage") {
+        couponDiscountAmount = Number(order.coupon.discount)
+      } else {
+        couponDiscountAmount = Number(order.coupon.discount || 0);
+      }
+    }
+    const totalValue = Number(order.amount ?? (sellingValue - couponDiscountAmount ?? 0));
+
+    ensureSpace(26);
+    let totalsY = y;
+
+    // Create table-like layout with borders
+    const col1X = pad;
+    const col2X = pad + 45;
+    const col3X = pad + 90;
+    const tableW = pageWidth - pad * 2;
+    const rowH = 5;
+
+    // Draw table borders
+    doc.setDrawColor(...BORDER_GRAY);
+    doc.setLineWidth(0.5);
+
+    // Horizontal lines
+    doc.line(col1X, totalsY, col1X + tableW, totalsY);
+    doc.line(col1X, totalsY + rowH * 2, col1X + tableW, totalsY + rowH * 2);
+    doc.line(col1X, totalsY + rowH * 4, col1X + tableW, totalsY + rowH * 4);
+
+    // Vertical lines
+    doc.line(col2X, totalsY, col2X, totalsY + rowH * 4);
+    doc.line(col3X, totalsY, col3X, totalsY + rowH * 4);
+
+    // LEFT COLUMN: Terms & Conditions + Sign
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("Terms & Conditions", col1X + 2, totalsY + 4);
 
     doc.setFont("helvetica", "normal");
-    const wrapped = doc.splitTextToSize(order.notes, pageWidth - pad * 2);
-    doc.text(wrapped, pad, y);
-    y += wrapped.length * 5 + 6;
-  }
+    doc.setFontSize(5.5);
+    doc.setTextColor(60, 60, 60);
+    doc.text("NO RETURN AND NO EXCHANGE", col1X + 2, totalsY + rowH + 3);
 
-  // ---------- FOOTER ----------
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(...PRIMARY);
-  doc.text(
-    "Thank you for your order!",
-    pageWidth / 2,
-    pageHeight - 12,
-    { align: "center" }
-  );
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("Sign", col1X + 20, totalsY + rowH * 2.5);
 
-  doc.save(`invoice_${order._id}.pdf`);
+    // MIDDLE COLUMN: Summary Table (Total Items, Total MRP, Round off)
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60, 60, 60);
+
+    doc.text("Total Item(s)", col2X + 2, totalsY + 4);
+    doc.text(String(items.length), col3X - 8, totalsY + 4, { align: "right" });
+
+    doc.text("Total MRP", col2X + 2, totalsY + rowH + 4);
+    doc.text(subtotalValue.toFixed(2), col3X - 8, totalsY + rowH + 4, { align: "right" });
+
+    // Coupon Discount row (added)
+    doc.text("Coupon Discount", col2X + 2, totalsY + rowH * 2 + 4);
+    doc.text(`- ${couponDiscountAmount.toFixed(2)}`, col3X - 8, totalsY + rowH * 2 + 4, { align: "right" });
+
+    const roundOff = totalValue - Math.floor(totalValue);
+    // move Round off one row down to accommodate coupon row
+    doc.text("Round off.", col2X + 2, totalsY + rowH * 3 + 4);
+    doc.text((roundOff >= 0 ? "-" : "") + roundOff.toFixed(2), col3X - 8, totalsY + rowH * 3 + 4, { align: "right" });
+
+    // RIGHT COLUMN: Net Payable box (highlighted)
+    const netPayableX = col3X;
+    const netPayableH = rowH * 4;
+
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(netPayableX, totalsY, tableW - (col3X - col1X), netPayableH, 2, 2, "F");
+
+    doc.setFontSize(6.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("Net Payable", netPayableX + 3, totalsY + 3);
+
+    doc.setFontSize(8);
+    doc.text(`Rs. ${(totalValue-roundOff).toFixed(2)}`, netPayableX + 3, totalsY + 8);
+
+    doc.setFontSize(5.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Total Saving: Rs. ${(customerDiscount+couponDiscountAmount).toFixed(2)}`, netPayableX + 3, totalsY + 12);
+    doc.text("Billed By: Owner", netPayableX + 3, totalsY + 16);
+
+    y = totalsY + rowH * 4 + 4;
+
+    // ---------- DIVIDER ----------
+    doc.setDrawColor(...PRIMARY);
+    doc.line(pad, y, pageWidth - pad, y);
+    y += 3;
+
+    // ---------- BOTTOM FOOTER ----------
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK_TEXT);
+    doc.text("PATHWAY TO A HEALTHY LIFE", pad + 2, y);
+
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 80, 80);
+    doc.text("www.mediquick1.com", pageWidth / 2, y, { align: "center" });
+
+    // ---------- FOOTER ----------
+    doc.setFontSize(6);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...PRIMARY);
+    doc.text(
+      "Thank you for your order!",
+      pageWidth / 2,
+      pageHeight - 8,
+      { align: "center" }
+    );
+
+    doc.save(`invoice_${invoiceLabel}.pdf`);
 };
 
 
