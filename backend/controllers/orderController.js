@@ -109,6 +109,7 @@ if (couponResult.success) {
             items: items.map(item => ({
                 productId: item._id,
                 name: item.name,
+                packing : item.packing,
                 price: item.price,
                 image: item.image,
                 quantity: item.quantity,
