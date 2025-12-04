@@ -213,7 +213,7 @@ const Product = () => {
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     onClick={() => {
-                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount,
+                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount, packing : productData.packing,
         promoterDiscount: productData.promoterDiscount });
                       // toast.success("Added to cart");
                     }}
@@ -224,7 +224,7 @@ const Product = () => {
 
                   <button
                     onClick={() => {
-                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount,
+                      addToCart(productData._id, { quantity, selectedPrice: sellingPrice, customerDiscount: productData.customerDiscount, packing : productData.packing,
         promoterDiscount: productData.promoterDiscount});
                       navigate("/cart");
                     }}

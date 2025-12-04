@@ -223,6 +223,7 @@ const ShopContextProvider = (props) => {
                     name: product.name,
                     image: Array.isArray(product.image) ? product.image : (product.image ? [product.image] : []),
                     price: product.price,
+                    packing : product.packing,
                     customerDiscount: product.customerDiscount || 0,
                     promoterDiscount: product.promoterDiscount || 0,
                     minOrderQuantity: product.minOrderQuantity || 1
@@ -335,6 +336,7 @@ const ShopContextProvider = (props) => {
                     name: product.name,
                     image: Array.isArray(product.image) ? product.image : (product.image ? [product.image] : []),
                     price: product.price,
+                    packing : product.packing,
                     customerDiscount: product.customerDiscount || 0,
                     promoterDiscount: product.promoterDiscount || 0,
                     minOrderQuantity: product.minOrderQuantity || 1
@@ -436,6 +438,7 @@ const ShopContextProvider = (props) => {
                 quantity: quantity,
                 customerDiscount: product.customerDiscount,
                 promoterDiscount: product.promoterDiscount,
+                packing : product.packing,
                 isPackage: typeof item === 'object' ? item.isPackage : false,
                 prices: {
                     mrp: priceDetails.mrp,

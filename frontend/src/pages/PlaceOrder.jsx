@@ -487,7 +487,7 @@ const PlaceOrder = () => {
                     value={formData.country}
                     className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded py-1.5 px-3.5 w-full"
                     type="text"
-                    placeholder="Country"
+                    placeholder="Referred by(Doctor)"
                   />
                 </div>
                 <input
@@ -609,7 +609,7 @@ const PlaceOrder = () => {
                     value={formData.billingCountry}
                     className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded py-1.5 px-3.5 w-full"
                     type="text"
-                    placeholder="Country"
+                    placeholder="Referred by(Doctor)"
                   />
                 </div>
                 <input
