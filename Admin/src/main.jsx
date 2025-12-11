@@ -10,3 +10,11 @@ createRoot(document.getElementById('root')).render(
     <App />
   </BrowserRouter>,
 )
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/firebase-messaging-sw.js")
+    .then((r) => console.log("SW registered:", r))
+    .catch((e) => console.log("SW failed:", e));
+}
+

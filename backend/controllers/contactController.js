@@ -1,5 +1,6 @@
 import contactModel from "../models/contactModel.js";
-
+import AdminToken from "../models/AdminToken.js";
+import { sendNotification } from "../firebase.js";
 // Submit a new contact form
 const submitContact = async (req, res) => {
     try {
@@ -22,6 +23,21 @@ const submitContact = async (req, res) => {
 
         const contact = new contactModel(contactData);
         await contact.save();
+
+        const adminTokens = await AdminToken.find().lean();
+                const tokens = adminTokens.map(t => t.token);
+                if (tokens.length > 0) {
+                    try {
+                        await sendNotification(
+                            tokens,
+                            "New Message Received",
+                            `You have received a new message. Please check your dashboard to respond.`
+                        );
+                    } catch (err) {
+                        console.error("Notification send failed (non-fatal):", err);
+                        // continue — do not block order placement for notification failures
+                    }
+                }
 
         res.json({ success: true, message: "Your message has been sent successfully!" });
     } catch (error) {

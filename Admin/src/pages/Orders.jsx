@@ -60,7 +60,6 @@ const Orders = ({ token }) => {
         },
         { headers: { token } }
       );
-      console.log(response.data.orders)
 
       if (response.data.success) {
         setOrders(response.data.orders);

@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../App";
 import { RefreshCw, ShoppingCart, Gift } from "lucide-react";
+import { getFCMToken, onMessageListener } from "../firebase";
 
 const Dashboard = ({ token }) => {
   const [loading, setLoading] = useState(false);
@@ -129,6 +130,34 @@ const Dashboard = ({ token }) => {
   useEffect(() => {
     fetchTotals();
   }, [token]);
+
+  useEffect(() => {
+    async function setupNotifications() {
+      try {
+        const fcmToken = await getFCMToken();
+        if (fcmToken) {
+          // Save the token to backend using the correct endpoint
+          const response = await axios.post(`${backendUrl}/api/admin/save-admin-token`, { 
+            token: fcmToken 
+          });
+          console.log(response)
+          console.log("Admin FCM token saved:", fcmToken);
+        }
+
+        // Listen for incoming messages
+        onMessageListener().then((payload) => {
+          if (payload?.notification) {
+            // Replace alert with a toast/UI notification
+            alert(payload.notification.title + "\n" + payload.notification.body);
+          }
+        }).catch((err) => console.warn("onMessage listener error", err));
+      } catch (err) {
+        console.error("setupNotifications error:", err);
+      }
+    }
+
+    setupNotifications();
+  }, []);
 
   const fmt = (n) => `Rs. ${Number(n || 0).toFixed(2)}`;
 

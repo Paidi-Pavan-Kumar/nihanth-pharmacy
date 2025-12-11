@@ -7,7 +7,8 @@ import crypto from "crypto";
 import couponModel from "../models/couponModel.js";
 import settingsModel from "../models/settingsModel.js";
 import cryptoWalletModel from "../models/cryptoWalletModel.js";
-
+import AdminToken from "../models/AdminToken.js";
+import { sendNotification } from "../firebase.js";
 // global variables
 const currency = 'Rupee'
 const deliveryCharge = 0
@@ -132,6 +133,21 @@ if (couponResult.success) {
         await newOrder.save()
 
         await userModel.findByIdAndUpdate(userId, {cartData: {}})
+        const username = await userModel.findById(userId) 
+        const adminTokens = await AdminToken.find().lean();
+        const tokens = adminTokens.map(t => t.token);
+        if (tokens.length > 0) {
+            try {
+                await sendNotification(
+                    tokens,
+                    "New Order Received",
+                    `Order #${newOrder._id.toString().slice(-6)} • Total ₹${finalAmount}, Phone Number : ${username.phoneNumber}`
+                );
+            } catch (err) {
+                console.error("Notification send failed (non-fatal):", err);
+                // continue — do not block order placement for notification failures
+            }
+        }
 
         res.json({success: true, message: "Order Placed"})
 
