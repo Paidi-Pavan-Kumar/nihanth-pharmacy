@@ -107,12 +107,12 @@ const Wallet = () => {
                 <div className="mt-3 text-sm">
                   <p className="text-xs text-gray-600 mb-1">Promote our store and earn — share this link:</p>
                   <a
-                    href="https://nihanth-pharma.vercel.app/"
+                    href="https://mediquick1.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-md hover:bg-indigo-100"
                   >
-                    https://nihanth-pharma.vercel.app/
+                    https://mediquick1.comp/
                   </a>
                 </div>
               </div>
@@ -159,7 +159,7 @@ const Wallet = () => {
                 Copy Code
               </button>
               <button
-                onClick={() => navigator.clipboard?.writeText("https://nihanth-pharma.vercel.app/").then(() => toast.success('Store link copied.Share this Link to Earn'))}
+                onClick={() => navigator.clipboard?.writeText("https://mediquick1.com").then(() => toast.success('Store link copied.Share this Link to Earn'))}
                 className="px-4 py-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-500 text-white text-sm shadow"
               >
                 Share
@@ -196,12 +196,12 @@ const Wallet = () => {
               <div className="mt-3 text-sm">
                 <p className="text-xs text-gray-600 mb-1">Promote our store and earn — share this link:</p>
                 <a
-                  href="https://nihanth-pharma.vercel.app/"
+                  href="https://mediquick1.com/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block text-sm font-medium text-indigo-700 bg-indigo-50 px-3 py-1 rounded-md hover:bg-indigo-100"
                 >
-                  https://nihanth-pharma.vercel.app/
+                  https://mediquick1.com/
                 </a>
               </div>
             </div>

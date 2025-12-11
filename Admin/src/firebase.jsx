@@ -11,15 +11,20 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+const messaging = getMessaging(app);
 
 // Ask notification permission + return token
 export const getFCMToken = async () => {
   try {
+    // Explicitly register service worker
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
     const token = await getToken(messaging, {
-      vapidKey:
-        "BLTBHxPKKI66jcIxYgSL_PVI1h_7eRTlgWQxP6FgDMdrT9IBXbrIQ81pTfZZi4s6bWGKjs86VMSbgsuzV4Po8ZY",
+      vapidKey: "BLTBHxPKKI66jcIxYgSL_PVI1h_7eRTlgWQxP6FgDMdrT9IBXbrIQ81pTfZZi4s6bWGKjs86VMSbgsuzV4Po8ZY",
+      serviceWorkerRegistration: registration, // pass SW to avoid pushManager undefined
     });
+
+    console.log("FCM Token:", token);
     return token;
   } catch (err) {
     console.error("Token error:", err);
