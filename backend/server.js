@@ -13,6 +13,7 @@ import uploadImageRoute from './routes/uploadImageRoute.js'
 import prescriptionRoutes from './routes/prescriptionRoutes.js'
 import blogRouter from './routes/blogRoute.js'
 import noterouter from './routes/notifications.js'
+
 //App config
 const app = express()
 const port = process.env.PORT || 4000
@@ -21,27 +22,19 @@ connectCloudinary()
 
 //middleware
 app.use(express.json())
+
+// ✅ Simple CORS - Allow All Origins
 app.use(cors({
-    origin: "*",
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-    exposedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }))
 
-// ✅ Global CORS Response Headers Middleware
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, token");
-    res.header("Access-Control-Allow-Credentials", "true");
-    next();
-  });
-
 //api-end points
 app.get("/", (req, res) => {
-    res.status(200).send("Nihanth pharmacy Backend");
-  });
+    res.status(200).send("error");
+});
 app.use('/api/user', userRouter)
 app.use('/api/product', productRouter)
 app.use('/api/cart', cartRouter)
