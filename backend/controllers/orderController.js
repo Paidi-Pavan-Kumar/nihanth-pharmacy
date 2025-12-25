@@ -7,8 +7,8 @@ import crypto from "crypto";
 import couponModel from "../models/couponModel.js";
 import settingsModel from "../models/settingsModel.js";
 import cryptoWalletModel from "../models/cryptoWalletModel.js";
-import AdminToken from "../models/AdminToken.js";
-import { sendNotification } from "../firebase.js";
+import transporter from "../config/nodemailer.js";
+
 // global variables
 const currency = 'Rupee'
 const deliveryCharge = 0
@@ -134,20 +134,59 @@ if (couponResult.success) {
 
         await userModel.findByIdAndUpdate(userId, {cartData: {}})
         const username = await userModel.findById(userId) 
-        const adminTokens = await AdminToken.find().lean();
-        const tokens = adminTokens.map(t => t.token);
-        if (tokens.length > 0) {
-            try {
-                await sendNotification(
-                    tokens,
-                    "New Order Received",
-                    `Order #${newOrder._id.toString().slice(-6)} • Total ₹${finalAmount}, Phone Number : ${username.phoneNumber}`
-                );
-            } catch (err) {
-                console.error("Notification send failed (non-fatal):", err);
-                // continue — do not block order placement for notification failures
-            }
-        }
+        
+        const mailOptions = {
+    from: `"Order Notification" <${process.env.SENDER_EMAIL}>`,
+    to: process.env.RECEIVER_EMAIL,
+    subject: `New Order Placed – Order ID: ${newOrder._id}`,
+    text: `
+A new order has been placed on the website.
+
+==============================
+ORDER DETAILS
+==============================
+Order Date      : ${new Date().toLocaleString()}
+Payment Method  : ${paymentMethod}
+Payment Status  : ${newOrder.payment ? "Paid" : "Pending"}
+Order Status    : ${newOrder.status}
+
+==============================
+CUSTOMER DETAILS
+==============================
+Name  : ${username.name}
+Email : ${username.email || "Not provided"}
+Phone : ${username.phoneNumber || "Not provided"}
+
+==============================
+DELIVERY ADDRESS
+==============================
+${address.street} and ${address.city}, ${address.state} - ${address.zipcode}
+
+==============================
+ORDER SUMMARY
+==============================
+Original Amount : ₹${originalAmount}
+Final Amount    : ₹${finalAmount}
+Coupon Applied  : ${couponCode || "No"}
+Notes           : ${notes || "None"}
+
+==============================
+ITEMS
+==============================
+${items.map((item, index) => `
+${index + 1}. ${item.name}
+   Packing  : ${item.packing}
+   Qty      : ${item.quantity}
+   Price    : ₹${item.prices.final}
+`).join("")}
+
+==============================
+This order was placed via the website.
+`
+};
+
+        
+                await transporter.sendMail(mailOptions);
 
         res.json({success: true, message: "Order Placed"})
 

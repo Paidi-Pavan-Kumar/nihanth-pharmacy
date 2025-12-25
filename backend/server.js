@@ -12,7 +12,6 @@ import contactRouter from './routes/contactRoutes.js'
 import uploadImageRoute from './routes/uploadImageRoute.js'
 import prescriptionRoutes from './routes/prescriptionRoutes.js'
 import blogRouter from './routes/blogRoute.js'
-import noterouter from './routes/notifications.js'
 
 //App config
 const app = express()
@@ -44,6 +43,5 @@ app.use('/api/contact', contactRouter)
 app.use('/api/upload-image', uploadImageRoute)
 app.use('/api/blog', blogRouter)
 app.use('/api/prescription', prescriptionRoutes)
-app.use('/api/admin', noterouter);
 
 app.listen(port, ()=> console.log('Server started on PORT : '+ port))

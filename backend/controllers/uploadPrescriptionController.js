@@ -1,7 +1,6 @@
 import prescriptionModel from '../models/prescriptionModel.js';
 import { v2 as cloudinary } from "cloudinary"
-import AdminToken from "../models/AdminToken.js";
-import { sendNotification } from "../firebase.js";
+import transporter from '../config/nodemailer.js';
 const uploadPrescription = async (req, res) => {
   try {
     const { name, phone, email, notes, userId } = req.body;
@@ -50,21 +49,17 @@ const uploadPrescription = async (req, res) => {
 
     const newPrescription = new prescriptionModel(prescriptionData);
     await newPrescription.save();
-    
-    const adminTokens = await AdminToken.find().lean();
-                    const tokens = adminTokens.map(t => t.token);
-                    if (tokens.length > 0) {
-                        try {
-                            await sendNotification(
-                                tokens,
-                                "New Precription Received",
-                                `You have received a new Prescription. Please check your dashboard to respond.`
-                            );
-                        } catch (err) {
-                            console.error("Notification send failed (non-fatal):", err);
-                            // continue — do not block order placement for notification failures
-                        }
-                    }
+
+    const mailOptions = {
+            from: `"Prescription " <${process.env.SENDER_EMAIL}>`,
+            to: process.env.RECEIVER_EMAIL,
+            subject: "New Prescription Submission",
+            text: `
+You have received a Prescription submission.
+------------------------------
+This message was sent via the website contact form.
+    `
+        };
 
     res.json({
       success: true,

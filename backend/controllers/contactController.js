@@ -1,6 +1,5 @@
 import contactModel from "../models/contactModel.js";
-import AdminToken from "../models/AdminToken.js";
-import { sendNotification } from "../firebase.js";
+import transporter from '../config/nodemailer.js';
 // Submit a new contact form
 const submitContact = async (req, res) => {
     try {
@@ -24,20 +23,30 @@ const submitContact = async (req, res) => {
         const contact = new contactModel(contactData);
         await contact.save();
 
-        const adminTokens = await AdminToken.find().lean();
-                const tokens = adminTokens.map(t => t.token);
-                if (tokens.length > 0) {
-                    try {
-                        await sendNotification(
-                            tokens,
-                            "New Message Received",
-                            `You have received a new message. Please check your dashboard to respond.`
-                        );
-                    } catch (err) {
-                        console.error("Notification send failed (non-fatal):", err);
-                        // continue — do not block order placement for notification failures
-                    }
-                }
+        const mailOptions = {
+            from: `"Website Contact" <${process.env.SENDER_EMAIL}>`,
+            to: process.env.RECEIVER_EMAIL,
+            subject: "New Website Contact Form Submission",
+            text: `
+You have received a new contact form submission.
+
+------------------------------
+Name       : ${name}
+Email      : ${email}
+Phone      : ${phone}
+Date       : ${new Date().toLocaleString()}
+------------------------------
+
+Message:
+${message}
+
+------------------------------
+This message was sent via the website contact form.
+    `
+        };
+
+
+        await transporter.sendMail(mailOptions);
 
         res.json({ success: true, message: "Your message has been sent successfully!" });
     } catch (error) {
@@ -61,7 +70,7 @@ const getContacts = async (req, res) => {
 const updateContactStatus = async (req, res) => {
     try {
         const { contactId, status } = req.body;
-        
+
         if (!contactId || !status) {
             return res.json({ success: false, message: "Contact ID and status are required" });
         }
@@ -83,7 +92,7 @@ const updateContactStatus = async (req, res) => {
 const deleteContact = async (req, res) => {
     try {
         const { contactId } = req.body;
-        
+
         if (!contactId) {
             return res.json({ success: false, message: "Contact ID is required" });
         }

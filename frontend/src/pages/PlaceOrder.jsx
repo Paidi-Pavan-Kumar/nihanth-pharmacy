@@ -393,7 +393,6 @@ const PlaceOrder = () => {
                     <p>
                       {address.city}, {address.state} {address.zipcode}
                     </p>
-                    <p>{address.country}</p>
                     <p>{address.phone}</p>
                   </div>
                 ))}
@@ -487,7 +486,7 @@ const PlaceOrder = () => {
                     value={formData.country}
                     className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded py-1.5 px-3.5 w-full"
                     type="text"
-                    placeholder="Referred by(Doctor)"
+                    placeholder="Doctor Name (Optional)"
                   />
                 </div>
                 <input
@@ -675,6 +674,16 @@ const PlaceOrder = () => {
               rows="3"
             ></textarea>
           </div>
+
+          <input
+                    required
+                    onChange={onChangeHandler}
+                    name="country"
+                    value={formData.country}
+                    className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded py-1.5 px-3.5 w-full"
+                    type="text"
+                    placeholder="Doctor Name (Optional)"
+                  />
 
           <div className="mt-4">
             <label className="block text-sm font-medium mb-2 dark:text-gray-300">

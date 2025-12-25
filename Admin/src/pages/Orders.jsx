@@ -424,7 +424,7 @@ const Orders = ({ token }) => {
       customerDiscountAmount += Math.max(0, mrpLine - sellingLine);
 
       const descWidth = pageWidth - pad * 2 - 160;
-      const descLines = doc.splitTextToSize((it.name+" # "+ (it.packing != null ? it.packing : "")) || "-", descWidth);
+      const descLines = doc.splitTextToSize((it.name+" ( "+ (it.packing != null ? it.packing : "") + " ) ")|| "-", descWidth);
       const lineHeight = 1;
       const rowHeight = Math.max(descLines.length * lineHeight, 5);
 
