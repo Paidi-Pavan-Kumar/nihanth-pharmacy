@@ -42,7 +42,9 @@ const Dashboard = ({ token }) => {
         return;
       }
 
-      const orders = res.data.orders;
+      const orders = res.data.orders.filter(
+        order => order.status !== "Cancelled"
+      )
 
       let totalOrders = orders.length;
       let totalAmount = 0;

@@ -669,6 +669,34 @@ const updateStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body
 
+        const order = await orderModel.findById(orderId);
+        if (!order) {
+            return res.json({ success: false, message: "Order not found" });
+        }
+        console.log(order.payment)
+        if (order.payment == true) {
+            if (order.coupon?.code) {
+                const couponCode = order.coupon.code.toUpperCase();
+                const discount = Number(order.coupon.discount || 0);
+                const promoterDelta = discount * 2;
+
+                const couponRecord = await couponModel.findOne({ code: couponCode });
+                if (!couponRecord) {
+                    return res.json({ success: false, message: "Coupon not found" });
+                }
+
+
+                await couponModel.updateOne(
+                        { code: couponCode },
+                        {
+                            $inc: {
+                                usedCount: -1,
+                                promoterAmount: -promoterDelta
+                            }
+                        }
+                    );
+            }
+        }
         await orderModel.findByIdAndUpdate(orderId, { status })
         res.json({success: true, message: "Order status updated successfully"})
     } catch (error) {

@@ -950,6 +950,7 @@ const Orders = ({ token }) => {
                     <option value="Shipped">Shipped</option>
                     <option value="Out for Delivery">Out for Delivery</option>
                     <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancel/Return</option>
                   </select>
                 </td>
                 <td className="px-4 py-4">
