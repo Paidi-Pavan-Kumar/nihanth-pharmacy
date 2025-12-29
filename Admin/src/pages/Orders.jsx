@@ -214,7 +214,7 @@ const Orders = ({ token }) => {
     let y = 4;
     const pad = 8;
     const deliver = order.address || {};
-    const doctor = deliver.country != null ? deliver.country : "Over the counter";
+    const doctor = order.doctor != null ? order.doctor : "Over the counter";
     const patientname = deliver.firstName ? `${deliver.firstName} ${deliver.lastName || ""}`.trim() : ""
     const ensureSpace = (needed) => {
       if (y + needed > pageHeight - pad) {

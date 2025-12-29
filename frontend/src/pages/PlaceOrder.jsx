@@ -84,6 +84,7 @@ const PlaceOrder = () => {
   const [couponSuccess, setCouponSuccess] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [notes, setNotes] = useState("");
+  const [doctor, setDoctor] = useState("");
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -330,6 +331,7 @@ const PlaceOrder = () => {
         amount: finalAmount,           // numeric final payable
         originalAmount: originalAmount,// numeric original amount (before coupon)
         notes: notes || "",
+        doctor : doctor || "",
         couponCode: couponNumeric > 0 ? couponCode : undefined,
         paymentMethod: paymentOption
       };
@@ -676,10 +678,9 @@ const PlaceOrder = () => {
           </div>
 
           <input
-                    required
-                    onChange={onChangeHandler}
-                    name="country"
-                    value={formData.country}
+                    onChange={(e) => setDoctor(e.target.value)}
+                    name="doctor"
+                    value={doctor || ""}
                     className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded py-1.5 px-3.5 w-full"
                     type="text"
                     placeholder="Doctor Name (Optional)"

@@ -24,7 +24,7 @@ const razorpayInstance = new razorpay({
 
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, originalAmount, withPromo,  address, billingAddress, notes, couponCode, paymentMethod } = req.body;
+        const { userId, items, amount, originalAmount, withPromo,  address, billingAddress, notes, couponCode, paymentMethod, doctor } = req.body;
         
         if (!items || items.length === 0) {
             return res.json({success: false, message: "No items in cart"});
@@ -127,6 +127,7 @@ if (couponResult.success) {
             status: "Order Placed",
             date: new Date(),
             notes: notes || "",
+            doctor : doctor || "",
             coupon: couponDetails
         }
         const newOrder = new orderModel(orderData)

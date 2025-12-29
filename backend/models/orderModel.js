@@ -18,6 +18,10 @@ const orderSchema = new mongoose.Schema({
         discount: { type: Number },
         discountType: { type: String, enum: ['percentage', 'fixed'] }
     },
+    doctor : {
+        type : String, 
+        default : 'None'
+    },
     manualPaymentDetails: {
         type: {
             paymentType: { type: String, enum: ['credit_card', 'debit_card', 'paypal', 'crypto', 'western_union'] },
