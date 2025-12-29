@@ -111,6 +111,7 @@ if (couponResult.success) {
                 productId: item._id,
                 name: item.name,
                 packing : item.packing,
+                profit : item.profit,
                 price: item.price,
                 image: item.image,
                 quantity: item.quantity,

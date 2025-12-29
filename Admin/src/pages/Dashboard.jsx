@@ -21,6 +21,10 @@ const Dashboard = ({ token }) => {
     totalCustomerDiscountPending: 0,
     totalCouponPaid: 0,
     totalCouponUnpaid: 0,
+    // profit metrics
+    totalProfit: 0,
+    totalProfitPaid: 0,
+    totalProfitPending: 0,
   });
 
   const fetchTotals = async () => {
@@ -54,6 +58,10 @@ const Dashboard = ({ token }) => {
       let totalCustomerDiscountPending = 0;
       let totalCouponPaid = 0;
       let totalCouponUnpaid = 0;
+      // profit trackers
+      let totalProfit = 0;
+      let totalProfitPaid = 0;
+      let totalProfitPending = 0;
 
       orders.forEach((o) => {
         const amount = Number(o.amount ?? 0);
@@ -87,6 +95,19 @@ const Dashboard = ({ token }) => {
         }
         const orderDiscount = customerDiscount + couponDiscount;
 
+        let orderProfit = 0;
+
+items.forEach((it) => {
+  const mrp = Number(it.mrp ?? 0);
+  const profitPercent = Number(it.profit ?? 0);
+  console.log(profitPercent)
+  // profit is percentage on MRP
+  const itemProfit = (mrp * profitPercent / 100);
+
+  orderProfit += itemProfit;
+});
+
+
         // accumulate discount totals and their paid/pending split
         totalCustomerDiscount += customerDiscount;
         totalCouponDiscount += couponDiscount;
@@ -96,13 +117,20 @@ const Dashboard = ({ token }) => {
           totalDiscountPaid += orderDiscount;
           totalCustomerDiscountPaid += customerDiscount;
           totalCouponPaid += couponDiscount;
+          totalProfitPaid += orderProfit;
         } else {
           totalDiscountPending += orderDiscount;
           totalCustomerDiscountPending += customerDiscount;
           totalCouponUnpaid += couponDiscount;
+          totalProfitPending += orderProfit;
         }
+
+        totalProfit += orderProfit;
       });
 
+      totalProfitPaid -= totalCouponPaid * 3;
+      totalProfitPending -= totalCouponUnpaid * 3;
+      totalProfit = totalProfitPaid + totalProfitPending;
       setTotals({
         totalOrders,
         totalAmount,
@@ -117,6 +145,9 @@ const Dashboard = ({ token }) => {
         totalCustomerDiscountPending,
         totalCouponPaid,
         totalCouponUnpaid,
+        totalProfit,
+        totalProfitPaid,
+        totalProfitPending,
       });
     } catch (err) {
       console.error("fetch orders failed", err);
@@ -241,6 +272,14 @@ const Dashboard = ({ token }) => {
                 </span>
                 <span>
                   Coupon unpaid <strong>{fmt(totals.totalCouponUnpaid)}</strong>
+                </span>
+
+                <br /><br />
+                <span className="mr-3">
+                  Profit: <strong>{fmt(totals.totalProfit)}</strong>
+                </span>
+                <span>
+                  (Earned {fmt(totals.totalProfitPaid)} • Pending {fmt(totals.totalProfitPending)})
                 </span>
               </div>
             </div>

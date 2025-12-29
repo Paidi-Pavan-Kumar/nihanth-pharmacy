@@ -18,6 +18,7 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [profit, setProfit] = useState("0");
   const [packing, setPacking] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [customerDiscount, setCustomerDiscount] = useState("0");
@@ -41,6 +42,7 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
       setDescription(product.description);
       setPacking(product.packing);
       setCompanyName(product.companyName);
+      setProfit(product.profit);
       setPrice(product.price.toString());
       setCustomerDiscount(product.customerDiscount.toString());
       setPromoterDiscount(product.promoterDiscount.toString());
@@ -142,6 +144,7 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
       formData.append("category", category);
       formData.append("subCategory", subCategory);
       formData.append("bestseller", bestseller);
+      formData.append("profit", profit);
 
       if (enableMinOrder && minOrderQuantity && !enableQuantityPriceList) {
         formData.append("minOrderQuantity", minOrderQuantity);
@@ -194,6 +197,7 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
           setImage4(false);
           setPrice("");
           setPacking("");
+          setProfit("");
           setCompanyName("");
           setCustomerDiscount("0");
           setPromoterDiscount("0");
@@ -399,6 +403,21 @@ const Add = ({ token, editMode = false, product = null, onEditComplete = null })
             required
           />
         </div>
+
+        <div>
+          <p className="mb-2">Profit (%)*</p>
+          <input
+            onChange={(e) => setProfit(e.target.value)}
+            value={profit}
+            className="w-full px-3 py-2 sm:w-[120px]"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
+            required
+          />
+        </div>
+        
 
         <div>
           <p className="mb-2">Promoter Discount (%)*</p>

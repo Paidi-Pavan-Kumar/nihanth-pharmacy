@@ -11,6 +11,7 @@ const addProduct = async (req, res) => {
             companyName,
             description,
             price,
+            profit,
             customerDiscount,
             promoterDiscount,
             category, 
@@ -58,6 +59,7 @@ const addProduct = async (req, res) => {
             companyName,
             description,
             price: Number(price),
+            profit : profit ? Number(profit) : 0,
             customerDiscount: Number(customerDiscount),
             promoterDiscount: Number(promoterDiscount),
             // promoCodeDiscount will be auto-calculated
@@ -71,7 +73,7 @@ const addProduct = async (req, res) => {
         
         const product = new productModel(productData);
         await product.save()
-
+        console.log(product)
         res.json({success: true, message: "Product added"})
     } catch (error) {
         console.log(error)
@@ -101,6 +103,7 @@ const bulkAddProducts = async (req, res) => {
             companyName: p.Companyname,
             description: '', // Add description if needed
             price: Number(p.price),
+            profit : profit ? Number(profit) : 0,
             customerDiscount: Number(p['Discount For Customer (%)']),
             promoterDiscount: Number(p['Discount for Promoter in %']),
             // promoCodeDiscount will be auto-calculated based on model
@@ -135,6 +138,7 @@ const editProduct = async (req, res) => {
             companyName,
             description,
             price,
+            profit,
             customerDiscount,
             promoterDiscount,
             category, 
@@ -196,6 +200,7 @@ const editProduct = async (req, res) => {
         product.companyName = companyName;
         product.description = description;
         product.price = Number(price);
+        product.profit = profit ? Number(profit) : 0;
         product.customerDiscount = Number(customerDiscount);
         product.promoterDiscount = Number(promoterDiscount);
         product.category = category;
