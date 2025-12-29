@@ -690,44 +690,121 @@ const updateStatus = async (req, res) => {
 //     }
 // }
 
+// const updatePaymentStatus = async (req, res) => {
+//   try {
+//     const { orderId, payment } = req.body;
+
+//     const order = await orderModel.findByIdAndUpdate(orderId, { payment }, { new: true });
+//     if (!order) return res.json({ success: false, message: "Order not found" });
+
+//     // Proceed only if paid and coupon exists
+//     if ((payment === true || payment === 'Paid') && order.coupon?.code) {
+//       try {
+//         const couponCode = order.coupon.code.toUpperCase();
+//         const couponRecord = await couponModel.findOne({ code: couponCode });
+//         if (!couponRecord) return res.json({ success: false, message: "Coupon not found" });
+
+//         const currentPromoterAmount = Number(couponRecord.promoterAmount || 0);
+//         const promoterDelta = Number(order.coupon.discount || 0) * 2;
+
+//         if (!isNaN(promoterDelta) && isFinite(promoterDelta)) {
+//           await couponModel.findOneAndUpdate(
+//             { code: couponCode },
+//             {
+//               $inc: { usedCount: 1 },
+//               $set: { promoterAmount: currentPromoterAmount + promoterDelta }
+//             }
+//           );
+//         } else {
+//           await couponModel.findOneAndUpdate(
+//             { code: couponCode },
+//             { $inc: { usedCount: 1 } }
+//           );
+//           console.warn(`Invalid promoter amount calculation: ${promoterDelta}`);
+//         }
+//       } catch (error) {
+//         console.error('Error updating coupon:', error);
+//       }
+//     }
+
+//     res.json({ success: true, message: "Payment status updated successfully" });
+
+//   } catch (error) {
+//     console.error(error);
+//     res.json({ success: false, message: error.message });
+//   }
+// };
+
 const updatePaymentStatus = async (req, res) => {
   try {
     const { orderId, payment } = req.body;
 
-    const order = await orderModel.findByIdAndUpdate(orderId, { payment }, { new: true });
-    if (!order) return res.json({ success: false, message: "Order not found" });
+    // 1. Get existing order FIRST
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.json({ success: false, message: "Order not found" });
+    }
 
-    // Proceed only if paid and coupon exists
-    if ((payment === true || payment === 'Paid') && order.coupon?.code) {
-      try {
-        const couponCode = order.coupon.code.toUpperCase();
-        const couponRecord = await couponModel.findOne({ code: couponCode });
-        if (!couponRecord) return res.json({ success: false, message: "Coupon not found" });
+    const previousPayment = order.payment;
+    order.payment = payment;
 
-        const currentPromoterAmount = Number(couponRecord.promoterAmount || 0);
-        const promoterDelta = Number(order.coupon.discount || 0) * 2;
+    // 2. Coupon handling only if coupon exists
+    if (order.coupon?.code) {
+      const couponCode = order.coupon.code.toUpperCase();
+      const discount = Number(order.coupon.discount || 0);
+      const promoterDelta = discount * 2;
 
-        if (!isNaN(promoterDelta) && isFinite(promoterDelta)) {
-          await couponModel.findOneAndUpdate(
-            { code: couponCode },
-            {
-              $inc: { usedCount: 1 },
-              $set: { promoterAmount: currentPromoterAmount + promoterDelta }
+      const couponRecord = await couponModel.findOne({ code: couponCode });
+      if (!couponRecord) {
+        return res.json({ success: false, message: "Coupon not found" });
+      }
+
+      // 👉 Pending → Paid
+      if (
+        (payment === true || payment === "Paid") &&
+        (previousPayment === false || previousPayment === "Pending")
+      ) {
+        await couponModel.updateOne(
+          { code: couponCode },
+          {
+            $inc: {
+              usedCount: 1,
+              promoterAmount: promoterDelta
             }
-          );
-        } else {
-          await couponModel.findOneAndUpdate(
-            { code: couponCode },
-            { $inc: { usedCount: 1 } }
-          );
-          console.warn(`Invalid promoter amount calculation: ${promoterDelta}`);
-        }
-      } catch (error) {
-        console.error('Error updating coupon:', error);
+          }
+        );
+      }
+
+      // 👉 Paid → Pending (REVERT)
+      if (
+        (previousPayment === true || previousPayment === "Paid") &&
+        (payment === false || payment === "Pending")
+      ) {
+        await couponModel.updateOne(
+          { code: couponCode },
+          {
+            $inc: {
+              usedCount: -1,
+              promoterAmount: -promoterDelta
+            }
+          }
+        );
+
+        // // ❗ Remove discount from order
+        // order.amount += discount;
+        // order.originalAmount = order.amount;
+
+        // // Optional: clear coupon info
+        // order.coupon = null;
       }
     }
 
-    res.json({ success: true, message: "Payment status updated successfully" });
+    await order.save();
+
+    res.json({
+      success: true,
+      message: "Payment status updated correctly"
+    });
 
   } catch (error) {
     console.error(error);

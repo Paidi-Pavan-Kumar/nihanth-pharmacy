@@ -960,7 +960,6 @@ const Orders = ({ token }) => {
                     <select
   onChange={(e) => paymentStatusHandler(e, order._id)}
   value={order.payment.toString()}
-  disabled={order.payment === true}
   className={`text-sm border rounded p-1.5 focus:border-blue-500 focus:ring-1 focus:ring-blue-500
     ${order.payment ? "bg-green-100 text-green-800 border-green-300" : "bg-yellow-100 text-yellow-800 border-yellow-300"}
   `}
