@@ -277,12 +277,19 @@ items.forEach((it) => {
                 </span>
 
                 <br /><br />
-                <span className="mr-3">
+                {/* <span className="mr-3">
                   Profit: <strong>{fmt(totals.totalProfit)}</strong>
                 </span>
                 <span>
                   (Earned {fmt(totals.totalProfitPaid)} • Pending {fmt(totals.totalProfitPending)})
+                </span> */}
+
+                {/* <span className="mr-3">
+                  Profit: <strong>{0}</strong>
                 </span>
+                <span>
+                  (Earned {fmt(0)} • Pending {fmt(0)})
+                </span> */}
               </div>
             </div>
           </div>

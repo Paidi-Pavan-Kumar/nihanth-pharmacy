@@ -40,7 +40,7 @@ const placeOrder = async (req, res) => {
         let finalAmount = amount;
         let couponDetails = null;
         if (couponCode) {
-            const couponResult = await applyCoupon(couponCode, originalAmount, amount);
+            const couponResult = await applyCoupon(couponCode, originalAmount + 12, amount);
         
             // if (couponResult.success) {
             //     couponDetails = couponResult.couponDetails;

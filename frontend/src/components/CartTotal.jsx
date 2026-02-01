@@ -49,24 +49,24 @@ const CartTotal = ({ couponDiscount = 0 }) => {
         {/* Free Shipping Section */}
         <div className="flex justify-between items-center py-2">
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Shipping</p>
-          <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
-            FREE
+          <span className="text-sm sm:text-base text-gray-500 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+            {currency} 5
           </span>
         </div>
 
         {/* Handling charges - Free */}
         <div className="flex justify-between items-center py-2">
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Handling charges</p>
-          <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
-            FREE
+          <span className="text-sm sm:text-base text-gray-500 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+            {currency} 5
           </span>
         </div>
 
         {/* Packing charges - Free */}
         <div className="flex justify-between items-center py-2">
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Packing charges</p>
-          <span className="text-sm sm:text-base text-green-600 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
-            FREE
+          <span className="text-sm sm:text-base  font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded">
+            {currency} 2
           </span>
         </div>
 
@@ -98,7 +98,7 @@ const CartTotal = ({ couponDiscount = 0 }) => {
             )}
           </div>
           <p className="text-base sm:text-lg font-bold text-gray-800 dark:text-white">
-            {currency} {formatPrice(finalTotal)}
+            {currency} {formatPrice(finalTotal + 12)}
           </p>
         </div>
       </div>

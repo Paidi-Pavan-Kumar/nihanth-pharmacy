@@ -322,7 +322,7 @@ const PlaceOrder = () => {
       const couponNumeric = Number(couponDiscount || 0);
 
       const originalAmount = Number((subtotalNumeric + deliveryFeeNumeric).toFixed(2));
-      const finalAmount = Number((subtotalNumeric + deliveryFeeNumeric - couponNumeric).toFixed(2));
+      const finalAmount = Number((subtotalNumeric + deliveryFeeNumeric - couponNumeric + 12).toFixed(2));
 
       let orderData = {
         address: showAddressForm ? address : selectedAddress,

@@ -214,7 +214,7 @@ const Orders = ({ token }) => {
     let y = 4;
     const pad = 8;
     const deliver = order.address || {};
-    const doctor = order.doctor != null ? order.doctor : "Over the counter";
+    const doctor = order.doctor.length !== 0 ? "DR. " + order.doctor : "Over the counter";
     const patientname = deliver.firstName ? `${deliver.firstName} ${deliver.lastName || ""}`.trim() : ""
     const ensureSpace = (needed) => {
       if (y + needed > pageHeight - pad) {
@@ -316,7 +316,7 @@ const Orders = ({ token }) => {
     metaY += 3;
     doc.text(`Patient: ${patientname}`, metaX, metaY);
     metaY += 3;
-    doc.text(`Ref By: DR.${doctor}`, metaX, metaY);
+    doc.text(`Ref By: ${doctor}`, metaX, metaY);
     y += 24;
 
     // ---------- DIVIDER ----------
@@ -509,8 +509,11 @@ const Orders = ({ token }) => {
     doc.text("Total Item(s)", col2X + 2, totalsY + 4);
     doc.text(String(items.length), col3X - 8, totalsY + 4, { align: "right" });
 
-    doc.text("Total MRP", col2X + 2, totalsY + rowH + 4);
-    doc.text(subtotalValue.toFixed(2), col3X - 8, totalsY + rowH + 4, { align: "right" });
+    doc.text("Delivery & other charges", col2X + 2, totalsY + rowH + 4);
+    doc.text((12).toFixed(2), col3X - 8, totalsY + rowH + 4, { align: "right" });
+
+    doc.text("Total MRP", col2X + 2, totalsY + rowH + 2);
+    doc.text(subtotalValue.toFixed(2), col3X - 8, totalsY + rowH + 2, { align: "right" });
 
     // Coupon Discount row (added)
     doc.text("Coupon Discount", col2X + 2, totalsY + rowH * 2 + 4);
@@ -1000,7 +1003,7 @@ const Orders = ({ token }) => {
 </div>
 
                           {order.originalAmount && (
-                            <div>Original Total: {currency} {order.originalAmount}</div>
+                            <div>Original Total: {currency} {order.originalAmount + 12}</div>
                           )}
                         </div>
                       </div>

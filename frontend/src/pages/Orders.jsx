@@ -203,7 +203,7 @@ const Orders = () => {
                             <p>Code: <span className="font-medium">{order.coupon.code}</span></p>
                             <p>Discount: {currency}{Number(order.coupon.discount).toFixed(2)}</p>
                             {order.originalAmount && (
-                              <p>Original Amount: {currency}{Number(order.originalAmount).toFixed(2)}</p>
+                              <p>Original Amount: {currency}{Number(order.originalAmount + 12).toFixed(2)}</p>
                             )}
                           </div>
                         </div>
