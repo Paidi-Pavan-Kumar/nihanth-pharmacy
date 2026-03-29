@@ -13,6 +13,14 @@ const SearchBar = () => {
     updateFilters({ search: searchInput });
   };
   
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    // Show related products while typing
+    setSearch(value);
+    updateFilters({ search: value });
+  };
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -35,7 +43,7 @@ const SearchBar = () => {
           <input 
             type="text"
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             onFocus={() => {
               // navigate to products page even if input is empty when focused
